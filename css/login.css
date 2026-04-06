@@ -1,0 +1,336 @@
+/* ============================================================
+   css/login.css — Login Page Styles
+   ============================================================ */
+
+/* ── Container Utama ── */
+#page-login {
+    min-height: 100vh;
+    display: flex;
+    background: var(--green-deep);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Lingkaran Dekoratif */
+#page-login::before,
+#page-login::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+#page-login::before {
+    top: -160px;
+    right: -120px;
+    width: 520px;
+    height: 520px;
+    background: radial-gradient(circle, rgba(116, 198, 157, 0.25) 0%, transparent 70%);
+}
+
+#page-login::after {
+    bottom: -200px;
+    left: -100px;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle, rgba(244, 196, 48, 0.12) 0%, transparent 70%);
+}
+
+/* ── Sisi Kiri: Branding & Hero ── */
+.login-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 64px 72px;
+    position: relative;
+    z-index: 1;
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 64px;
+}
+
+.login-brand .logo-box {
+    width: 52px;
+    height: 52px;
+    background: var(--yellow);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 12px rgba(244, 196, 48, 0.4);
+}
+
+.login-brand .brand-text h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+}
+
+.login-brand .brand-text span {
+    font-size: 11px;
+    color: var(--green-light);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.login-headline h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(36px, 5vw, 54px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.15;
+}
+
+.login-headline h2 em {
+    font-style: italic;
+    color: var(--yellow);
+}
+
+.login-headline p {
+    margin-top: 18px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.65);
+    max-width: 380px;
+    line-height: 1.7;
+}
+
+.login-stats {
+    display: flex;
+    gap: 32px;
+    margin-top: 56px;
+}
+
+.login-stat .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--yellow);
+}
+
+.login-stat .lbl {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 2px;
+}
+
+/* ── Sisi Kanan: Form Login ── */
+.login-right {
+    width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.login-card {
+    width: 100%;
+    background: var(--white);
+    border-radius: 24px;
+    padding: 44px 40px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.5s ease both;
+}
+
+.login-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.login-card .sub {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 6px;
+    margin-bottom: 32px;
+}
+
+/* Input Fields */
+.field { margin-bottom: 20px; }
+
+.field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-mid);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.field input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-dark);
+    background: var(--cream);
+    transition: var(--trans);
+    outline: none;
+}
+
+.field input:focus {
+    border-color: var(--green-fresh);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.12);
+}
+
+/* Tombol Login */
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background: var(--green-deep);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 28px;
+    transition: var(--trans);
+}
+
+.btn-login:hover {
+    background: var(--green-mid);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(26, 71, 49, 0.25);
+}
+
+.btn-login:active { transform: translateY(0); }
+
+/* Error State */
+#login-error {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 11px 14px;
+    background: #fff3f0;
+    border: 1.5px solid #fecdc6;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #b94040;
+}
+
+/* ── Akun Demo (Credential Cards) ── */
+.creds-divider {
+    border: none;
+    border-top: 1px solid #e8eef0;
+    margin: 24px 0 12px;
+}
+
+.creds-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.creds-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.creds-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--trans);
+    background: var(--white);
+    user-select: none;
+}
+
+.creds-card:hover {
+    border-color: var(--green-fresh);
+    background: #f7faf8;
+    transform: translateX(4px);
+}
+
+.cc-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.cc-body { flex: 1; }
+
+.cc-role {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.cc-user {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 1px;
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: #f0f4f0;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--green-deep);
+    font-weight: 700;
+}
+
+.cc-arrow {
+    font-size: 14px;
+    color: var(--text-light);
+    transition: var(--trans);
+}
+
+.creds-card:hover .cc-arrow {
+    color: var(--green-fresh);
+    transform: translateX(2px);
+}
+
+/* ── Animasi ── */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+.login-card.shake { animation: shake 0.4s ease; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .login-left { display: none; }
+    .login-right { width: 100%; padding: 20px; }
+    .login-card { padding: 32px 24px; }
+}

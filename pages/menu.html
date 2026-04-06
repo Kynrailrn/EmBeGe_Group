@@ -1,0 +1,140 @@
+<div class="page" id="page-menu">
+
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">MBG &rsaquo; <span>Data Menu</span></div>
+      <h2>Data Menu</h2>
+      <p>Atur menu harian, kandungan gizi, dan rotasi mingguan</p>
+    </div>
+    <button class="btn-add-record">+ Tambah Menu Baru</button>
+  </div>
+
+  <div class="readonly-notice" style="display: none;">
+    🔒 <span>Halaman ini hanya dapat dilihat. Perubahan data nutrisi dan menu memerlukan hak akses Admin.</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+    <div class="card" style="padding:18px 20px;">
+      <div style="font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Menu Aktif</div>
+      <div style="font-size:28px;font-weight:800;color:var(--text-dark);margin-top:6px;">24</div>
+      <div style="font-size:12px;color:var(--green-fresh);margin-top:2px;">↑ 3 menu baru bulan ini</div>
+    </div>
+    <div class="card" style="padding:18px 20px;">
+      <div style="font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Rata-rata Kalori</div>
+      <div style="font-size:28px;font-weight:800;color:var(--text-dark);margin-top:6px;">620 <span style="font-size:14px;font-weight:500;">kkal</span></div>
+      <div style="font-size:12px;color:var(--text-light);margin-top:2px;">Sesuai standar Kemenkes</div>
+    </div>
+    <div class="card" style="padding:18px 20px;">
+      <div style="font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Hari Ini</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text-dark);margin-top:6px;">Nasi Ayam Kecap</div>
+      <div style="font-size:12px;color:var(--text-light);margin-top:2px;">+ Sayur Bayam + Buah</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" placeholder="🔍  Cari nama menu atau bahan..." />
+    <select>
+      <option>Semua Jenjang</option>
+      <option>SD / MI</option>
+      <option>SMP / MTs</option>
+      <option>SMA / SMK / MA</option>
+    </select>
+    <select>
+      <option>Semua Hari</option>
+      <option>Senin</option><option>Selasa</option><option>Rabu</option>
+      <option>Kamis</option><option>Jumat</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nama Menu</th>
+          <th>Jenjang</th>
+          <th>Hari</th>
+          <th>Kalori</th>
+          <th>Protein</th>
+          <th>Status</th>
+          <th class="action-col">Aksi</th> </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>Nasi Ayam Kecap + Sayur Bayam</strong></td>
+          <td>SD</td>
+          <td>Senin</td>
+          <td>580 kkal</td>
+          <td>22g</td>
+          <td><span class="td-badge aktif">Aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view" title="Lihat Gizi">👁️</button>
+              <button class="tbl-btn edit" title="Edit Menu">✏️</button>
+              <button class="tbl-btn del" title="Hapus">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>Nasi Ikan Goreng + Tempe + Buah</strong></td>
+          <td>SD</td>
+          <td>Selasa</td>
+          <td>610 kkal</td>
+          <td>28g</td>
+          <td><span class="td-badge aktif">Aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view">👁️</button>
+              <button class="tbl-btn edit">✏️</button>
+              <button class="tbl-btn del">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>Nasi Rendang + Sayur Lodeh</strong></td>
+          <td>SMP</td>
+          <td>Rabu</td>
+          <td>680 kkal</td>
+          <td>32g</td>
+          <td><span class="td-badge aktif">Aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view">👁️</button>
+              <button class="tbl-btn edit">✏️</button>
+              <button class="tbl-btn del">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    /* Styling lokal agar tabel menu lebih informatif */
+    .td-badge.non {
+        background: #f7fafc;
+        color: #a0aec0;
+        border: 1px solid #e2e8f0;
+    }
+    .tbl-btn {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 5px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tbl-btn:hover {
+        background: #f8fafc;
+        border-color: var(--green-light);
+    }
+    .tbl-btn.del:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+    }
+  </style>
+
+</div>

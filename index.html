@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>MBG — Makanan Bergizi Gratis</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+    
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/login.css" />
+    <link rel="stylesheet" href="css/sidebar.css" />
+    <link rel="stylesheet" href="css/topbar.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/pages.css" />
+
+    <style>
+        /* CSS Tambahan untuk sinkronisasi state */
+        .page { display: none; }
+        .page.active { display: block; }
+        #login-error { 
+            display: none; 
+            color: var(--orange); 
+            font-size: 13px; 
+            margin-top: 10px; 
+            font-weight: 600; 
+        }
+        /* Efek Shake saat gagal login */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .shake { animation: shake 0.4s ease; }
+    </style>
+</head>
+<body>
+
+<div id="page-login">
+    <div class="login-left">
+        <div class="login-brand">
+            <div class="logo-box">🍱</div>
+            <div class="brand-text">
+                <h1>MBG</h1>
+                <span>Makanan Bergizi Gratis</span>
+            </div>
+        </div>
+        <div class="login-headline">
+            <h2>Nutrisi <em>merata,</em><br>generasi kuat.</h2>
+            <p>Platform manajemen distribusi makanan bergizi gratis untuk seluruh siswa Indonesia. Pantau, kelola, dan evaluasi program dengan mudah.</p>
+        </div>
+        <div class="login-stats">
+            <div class="login-stat"><div class="num">1.240</div><div class="lbl">Sekolah Terdaftar</div></div>
+            <div class="login-stat"><div class="num">84 K</div><div class="lbl">Siswa Terlayani</div></div>
+            <div class="login-stat"><div class="num">98%</div><div class="lbl">Distribusi Tepat Waktu</div></div>
+        </div>
+    </div>
+
+    <div class="login-right">
+        <div class="login-card">
+            <h3>Masuk ke Sistem 🍱</h3>
+            <p class="sub">Masukkan username dan password Anda. Role akan terdeteksi otomatis.</p>
+
+            <div class="field">
+                <label>Username</label>
+                <input type="text" id="inp-user" placeholder="Masukkan username…" autocomplete="username" />
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+
+            <div id="login-error"></div>
+
+            <button class="btn-login" onclick="doLogin()">Masuk ke Sistem →</button>
+
+            <hr class="creds-divider" style="margin: 24px 0; border: none; border-top: 1px solid #eee;" />
+            <div class="creds-label" style="font-size: 11px; color: #888; text-align: center; margin-bottom: 12px;">Akun Demo — Klik untuk isi otomatis</div>
+            
+            <div class="creds-cards" style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="creds-card" onclick="fillCreds('superadmin','Admin@MBG2025')" style="cursor:pointer; display: flex; align-items:center; padding: 10px; border: 1px solid #eee; border-radius: 12px;">
+                    <div class="cc-icon" style="margin-right: 12px;">👑</div>
+                    <div class="cc-body"><div style="font-weight:700; font-size:12px;">Super Admin</div><code style="font-size:10px;">superadmin</code></div>
+                </div>
+                <div class="creds-card" onclick="fillCreds('admin.sekolah','Sekolah@123')" style="cursor:pointer; display: flex; align-items:center; padding: 10px; border: 1px solid #eee; border-radius: 12px;">
+                    <div class="cc-icon" style="margin-right: 12px;">🏫</div>
+                    <div class="cc-body"><div style="font-weight:700; font-size:12px;">Admin Sekolah</div><code style="font-size:10px;">admin.sekolah</code></div>
+                </div>
+            </div>
+
+            <div class="login-footer">© 2026 MBG · Kementerian Pendidikan · Sistem Versi 3.0</div>
+        </div>
+    </div>
+</div>
+
+<div id="page-app">
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo-box">🍱</div>
+            <div class="brand-txt">
+                <h1>MBG</h1>
+                <span>Makanan Bergizi Gratis</span>
+            </div>
+        </div>
+
+        <div class="sidebar-section">Utama</div>
+        <div class="nav-item" data-page="dashboard" onclick="navigate(this)">
+            <div class="nav-icon">🏠</div>Dashboard
+        </div>
+
+        <div class="sidebar-section">Modul</div>
+        <div class="nav-item" data-page="siswa" onclick="navigate(this)">
+            <div class="nav-icon">👨‍🎓</div>Data Siswa
+        </div>
+        <div class="nav-item" data-page="menu" onclick="navigate(this)">
+            <div class="nav-icon">🍽️</div>Data Menu
+        </div>
+        <div class="nav-item" data-page="sekolah" onclick="navigate(this)">
+            <div class="nav-icon">🏫</div>Data Sekolah
+        </div>
+        <div class="nav-item" data-page="jadwal" onclick="navigate(this)">
+            <div class="nav-icon">📅</div>Jadwal Distribusi
+            <span class="nav-badge" id="badge-jadwal" style="display: none;">0</span>
+        </div>
+        <div class="nav-item" data-page="laporan" onclick="navigate(this)">
+            <div class="nav-icon">📊</div>Laporan
+        </div>
+
+        <div class="sidebar-section">Admin</div>
+        <div class="nav-item" data-page="usermgmt" onclick="navigate(this)">
+            <div class="nav-icon">⚙️</div>User Management
+            <span class="sa-tag">SA</span>
+        </div>
+
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-user">
+            <div class="ava" id="sidebar-ava">?</div>
+            <div class="info">
+                <div class="name" id="sidebar-name">—</div>
+                <div class="role" id="sidebar-role">—</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div class="topbar">
+            <div class="topbar-title">
+                <div class="breadcrumb">MBG &rsaquo; <span id="tb-breadcrumb">Dashboard</span></div>
+                <h2 id="tb-title">Dashboard</h2>
+            </div>
+            <div class="topbar-actions">
+                <div class="topbar-chip">
+                    <div class="dot"></div>
+                    <span id="tb-username">—</span>
+                    &nbsp;·&nbsp;
+                    <span id="tb-role-tag" style="color:var(--green-mid);font-weight:700;">—</span>
+                </div>
+                <div class="topbar-avatar" id="tb-avatar">?</div>
+                <button class="btn-logout" onclick="doLogout()">🚪 Keluar</button>
+            </div>
+        </div>
+
+        <div class="content-wrap" id="content-wrap">
+            </div>
+    </div>
+</div>
+
+<script src="js/state.js"></script>
+
+<script src="js/roles/superadmin.js"></script>
+<script src="js/roles/admin.js"></script>
+<script src="js/roles/operator.js"></script>
+
+<script src="js/login.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/topbar.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+    // Fungsi pembantu untuk demo
+    function fillCreds(user, pass) {
+        document.getElementById('inp-user').value = user;
+        document.getElementById('inp-pass').value = pass;
+        clearLoginError();
+        document.getElementById('inp-pass').focus();
+    }
+
+    // Menangani tombol Enter pada input
+    document.getElementById('inp-pass').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') doLogin();
+    });
+</script>
+
+</body>
+</html>

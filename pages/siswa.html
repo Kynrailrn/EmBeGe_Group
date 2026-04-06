@@ -1,0 +1,155 @@
+<div class="page" id="page-siswa">
+
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">MBG &rsaquo; <span>Data Siswa</span></div>
+      <h2>Data Siswa</h2>
+      <p>Kelola data seluruh siswa penerima program MBG</p>
+    </div>
+    <button class="btn-add-record">+ Tambah Siswa Baru</button>
+  </div>
+
+  <div class="readonly-notice" style="display: none;">
+    🔒 <span>Halaman ini hanya dapat dilihat. Modifikasi data siswa memerlukan hak akses Admin Sekolah atau Super Admin.</span>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" placeholder="🔍  Cari nama siswa atau NISN…" />
+    <select>
+      <option>Semua Jenjang</option>
+      <option>SD / MI</option>
+      <option>SMP / MTs</option>
+      <option>SMA / SMK / MA</option>
+    </select>
+    <select>
+      <option>Semua Sekolah</option>
+      <option>SDN 01 Cipayung</option>
+      <option>SMPN 3 Bekasi</option>
+      <option>SMAN 2 Cibitung</option>
+    </select>
+    <select>
+      <option>Semua Status</option>
+      <option>Aktif</option>
+      <option>Non-aktif</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>NISN</th>
+          <th>Nama Siswa</th>
+          <th>Kelas</th>
+          <th>Sekolah</th>
+          <th>Status MBG</th>
+          <th class="action-col">Aksi</th> </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td><td>0081234561</td><td><strong>Andi Firmansyah</strong></td><td>5A</td>
+          <td>SDN 01 Cipayung</td>
+          <td><span class="td-badge aktif">Aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view" title="Lihat Detail">👁️</button>
+              <button class="tbl-btn edit" title="Edit Siswa">✏️</button>
+              <button class="tbl-btn del" title="Hapus">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>2</td><td>0081234562</td><td><strong>Dewi Anggraini</strong></td><td>5B</td>
+          <td>SDN 01 Cipayung</td>
+          <td><span class="td-badge aktif">Aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view">👁️</button>
+              <button class="tbl-btn edit">✏️</button>
+              <button class="tbl-btn del">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>3</td><td>0091234563</td><td><strong>Rizky Maulana</strong></td><td>8C</td>
+          <td>SMPN 3 Bekasi</td>
+          <td><span class="td-badge aktif">Aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view">👁️</button>
+              <button class="tbl-btn edit">✏️</button>
+              <button class="tbl-btn del">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>4</td><td>0091234564</td><td><strong>Sari Indah Lestari</strong></td><td>9A</td>
+          <td>SMPN 3 Bekasi</td>
+          <td><span class="td-badge non">Non-aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view">👁️</button>
+              <button class="tbl-btn edit">✏️</button>
+              <button class="tbl-btn del">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>5</td><td>0101234565</td><td><strong>Bagas Prasetyo</strong></td><td>11 IPA 2</td>
+          <td>SMAN 2 Cibitung</td>
+          <td><span class="td-badge aktif">Aktif</span></td>
+          <td class="action-col">
+            <div style="display:flex; gap:5px;">
+              <button class="tbl-btn view">👁️</button>
+              <button class="tbl-btn edit">✏️</button>
+              <button class="tbl-btn del">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:12px;color:var(--text-light);">
+    <span>Menampilkan 1–5 dari 84.320 siswa</span>
+    <div style="display:flex;gap:6px;">
+      <button class="btn-page">← Sebelumnya</button>
+      <button class="btn-page active">1</button>
+      <button class="btn-page">2</button>
+      <button class="btn-page">Berikutnya →</button>
+    </div>
+  </div>
+
+  <style>
+    /* Styling khusus pagination agar seragam dengan tema */
+    .btn-page {
+        padding: 6px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        background: var(--white);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-page.active {
+        background: var(--green-fresh);
+        color: white;
+        border-color: var(--green-fresh);
+        font-weight: 600;
+    }
+    .tbl-btn {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 4px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tbl-btn:hover {
+        background: #f8fafc;
+        border-color: var(--green-light);
+    }
+  </style>
+
+</div>

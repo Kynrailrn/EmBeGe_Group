@@ -1,0 +1,143 @@
+/* ============================================================
+   css/variables.css — MBG Design Tokens & Global Base
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+    /* ── Branding Colors (Greens) ── */
+    --green-deep:   #1a4731;
+    --green-mid:    #2d6a4f;
+    --green-fresh:  #40916c;
+    --green-light:  #74c69d;
+    --green-pale:   #d8f3dc;
+
+    /* ── Accent Colors ── */
+    --yellow:       #f4c430;
+    --yellow-soft:  #fff3b0;
+    --orange:       #e76f51;
+    --red-pale:     #fff3f0;
+
+    /* ── Neutrals & Backgrounds ── */
+    --cream:        #fdfaf4;
+    --white:        #ffffff;
+    --border-base:  #e2e8f0;
+
+    /* ── Text Colors ── */
+    --text-dark:    #1b1f24;
+    --text-mid:     #4a5568;
+    --text-light:   #8a9bb0;
+
+    /* ── Layout Dimensions ── */
+    --sidebar-w:    256px;
+    --topbar-h:     64px;
+    --radius:       14px;
+    --radius-sm:    8px;
+    --radius-lg:    24px;
+
+    /* ── Elevation (Shadows) ── */
+    --shadow-sm:    0 1px 4px rgba(0,0,0,.08);
+    --shadow-md:    0 4px 16px rgba(0,0,0,.10);
+    --shadow-lg:    0 8px 32px rgba(0,0,0,.14);
+
+    /* ── Transitions ── */
+    --trans:        all .25s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ── Global Reset ── */
+*, *::before, *::after { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
+
+html, body { 
+    height: 100%; 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background: var(--cream); 
+    color: var(--text-dark); 
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Custom Scrollbar ── */
+::-webkit-scrollbar { 
+    width: 6px; 
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb { 
+    background: var(--green-light); 
+    border-radius: 99px; 
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--green-mid);
+}
+
+/* ── Global Animations ── */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Shared Utility Classes ── */
+
+/* Badges */
+.td-badge { 
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px; 
+    border-radius: 99px; 
+    font-size: 11px; 
+    font-weight: 700; 
+    letter-spacing: 0.02em;
+}
+.td-badge.aktif { 
+    background: var(--green-pale); 
+    color: var(--green-deep); 
+}
+.td-badge.non { 
+    background: var(--red-pale); 
+    color: var(--orange); 
+}
+
+/* Page Placeholder (Empty States) */
+.placeholder-page { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    min-height: 400px; 
+    text-align: center; 
+    gap: 16px; 
+    animation: fadeIn 0.5s ease;
+}
+.placeholder-page .big-icon { 
+    font-size: 72px; 
+    margin-bottom: 8px;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
+}
+.placeholder-page h3 { 
+    font-family: 'Fraunces', serif; 
+    font-size: 24px; 
+    font-weight: 700; 
+}
+.placeholder-page p { 
+    font-size: 14px; 
+    color: var(--text-light); 
+    max-width: 340px; 
+    line-height: 1.6; 
+}
+
+/* Text Truncation */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -1,0 +1,68 @@
+<div class="page" id="page-laporan">
+
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">MBG &rsaquo; <span>Laporan</span></div>
+      <h2>Laporan</h2>
+      <p>Evaluasi distribusi, serapan anggaran, dan gizi siswa</p>
+    </div>
+    <button class="btn-add-record">⬇ Ekspor Laporan (.xlsx)</button>
+  </div>
+
+  <div class="readonly-notice" style="display: none;">
+    🔒 <span>Halaman ini hanya dapat dilihat. Ekspor laporan memerlukan hak akses tingkat Manager atau Super Admin.</span>
+  </div>
+
+  <div class="filter-bar" style="margin-bottom:24px;">
+    <select id="filter-bulan">
+      <option value="06">Juni 2025</option>
+      <option value="05">Mei 2025</option>
+      <option value="04">April 2025</option>
+    </select>
+    <select>
+      <option>Semua Sekolah</option>
+      <option>SDN 01 Cipayung</option>
+      <option>SMPN 3 Bekasi</option>
+      <option>SMAN 2 Cibitung</option>
+    </select>
+    <select>
+      <option>Semua Jenjang</option>
+      <option>SD / MI</option>
+      <option>SMP / MTs</option>
+      <option>SMA / SMK / MA</option>
+    </select>
+    <button class="btn-primary" style="padding:10px 20px; background:var(--green-deep); color:var(--white); border:none; border-radius:10px; font-weight:700; cursor:pointer;">Tampilkan</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+    <div class="card" style="padding:18px 20px;">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Total Porsi</div>
+      <div style="font-size:26px; font-weight:800; color:var(--text-dark); margin-top:6px;">1.834.200</div>
+      <div style="font-size:12px; color:var(--green-fresh); margin-top:2px;">↑ 4,2% vs bulan lalu</div>
+    </div>
+    <div class="card" style="padding:18px 20px;">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Tingkat Tepat Waktu</div>
+      <div style="font-size:26px; font-weight:800; color:var(--green-deep); margin-top:6px;">98,2%</div>
+      <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Target: ≥ 95%</div>
+    </div>
+    <div class="card" style="padding:18px 20px;">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Serapan Anggaran</div>
+      <div style="font-size:26px; font-weight:800; color:var(--text-dark); margin-top:6px;">87,4%</div>
+      <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Rp 4,37 M dari Rp 5 M</div>
+    </div>
+    <div class="card" style="padding:18px 20px;">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Sekolah Terlayani</div>
+      <div style="font-size:26px; font-weight:800; color:var(--text-dark); margin-top:6px;">1.238</div>
+      <div style="font-size:12px; color:var(--text-light); margin-top:2px;">dari 1.240 sekolah</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-head">
+      <h3>Tren Distribusi Bulanan (2025)</h3>
+      <span class="see-all">Unduh Gambar ⬇</span>
+    </div>
+    <div style="display:flex; align-items:flex-end; gap:12px; height:150px; padding:10px 0; border-bottom: 1px solid #edf2f7;">
+      <div class="bar-chart-item" title="Januari: 65%"><div style="width:100%; background:var(--green-light); height:65%; border-radius:4px 4px 0 0;"></div><span class="bar-label">Jan</span></div>
+      <div class="bar-chart-item" title="Februari: 72%"><div style="width:100%; background:var(--green-light); height:72%; border-radius:4px 4px 0 0;"></div><span class="bar-label">Feb</span></div>
+      <div class="bar-chart-item" title="Maret: 68%"><div style="width:100%; background:var(--green-light); height:68%; border-radius:4px 4px 0 0;"></div><span class="bar-label">Mar</span></div>

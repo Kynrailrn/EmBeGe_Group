@@ -1,0 +1,137 @@
+<div class="page" id="page-jadwal">
+
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">MBG &rsaquo; <span>Jadwal Distribusi</span></div>
+      <h2>Jadwal Distribusi</h2>
+      <p>Kelola jadwal pengiriman makanan bergizi ke setiap sekolah</p>
+    </div>
+    <button class="btn-add-record">+ Tambah Jadwal</button>
+  </div>
+
+  <div class="readonly-notice" style="display: none;">
+    🔒 <span>Halaman ini hanya dapat dilihat. Modifikasi jadwal memerlukan hak akses lebih tinggi.</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div class="card" style="padding:18px 20px;border-left:4px solid var(--green-fresh);">
+      <div style="font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Selesai Hari Ini</div>
+      <div style="font-size:28px;font-weight:800;color:var(--text-dark);margin-top:6px;">1</div>
+    </div>
+    <div class="card" style="padding:18px 20px;border-left:4px solid var(--yellow);">
+      <div style="font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Sedang Proses</div>
+      <div style="font-size:28px;font-weight:800;color:var(--text-dark);margin-top:6px;">1</div>
+    </div>
+    <div class="card" style="padding:18px 20px;border-left:4px solid #8a9bb0;">
+      <div style="font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Terjadwal</div>
+      <div style="font-size:28px;font-weight:800;color:var(--text-dark);margin-top:6px;">36</div> </div>
+    <div class="card" style="padding:18px 20px;border-left:4px solid var(--orange);">
+      <div style="font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Terlambat</div>
+      <div style="font-size:28px;font-weight:800;color:var(--orange);margin-top:6px;">0</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" placeholder="🔍  Cari nama sekolah…" />
+    <select>
+      <option>Semua Tanggal</option>
+      <option>Hari Ini</option>
+      <option>Besok</option>
+      <option>Minggu Ini</option>
+    </select>
+    <select>
+      <option>Semua Status</option>
+      <option>Selesai</option>
+      <option>Proses</option>
+      <option>Terjadwal</option>
+      <option>Terlambat</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Sekolah</th>
+          <th>Tanggal</th>
+          <th>Jam</th>
+          <th>Jumlah Porsi</th>
+          <th>Menu</th>
+          <th>Petugas</th>
+          <th>Status</th>
+          <th class="action-col">Aksi</th> </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>SDN 01 Cipayung</td>
+          <td>10 Jun 2025</td>
+          <td>07:30</td>
+          <td>620</td>
+          <td>Nasi Ayam Kecap</td>
+          <td>Doni P.</td>
+          <td><span class="td-badge aktif">Selesai ✓</span></td>
+          <td class="action-col">
+            <button class="tbl-btn view" title="Lihat Detail">👁️</button>
+            <button class="tbl-btn edit" title="Edit Jadwal">✏️</button>
+          </td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>SMPN 3 Bekasi</td>
+          <td>10 Jun 2025</td>
+          <td>11:00</td>
+          <td>910</td>
+          <td>Nasi Ikan Goreng</td>
+          <td>Ahmad S.</td>
+          <td><span class="td-badge" style="background:#fff3b0;color:#7a6000;">Proses 🔄</span></td>
+          <td class="action-col">
+            <button class="tbl-btn view">👁️</button>
+            <button class="tbl-btn edit">✏️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:12px;color:var(--text-light);">
+    <span>Menampilkan 1–5 dari 38 jadwal aktif</span>
+    <div style="display:flex;gap:6px;">
+      <button class="btn-page">← Sebelumnya</button>
+      <button class="btn-page active">1</button>
+      <button class="btn-page">2</button>
+      <button class="btn-page">Berikutnya →</button>
+    </div>
+  </div>
+
+  <style>
+    /* CSS Tambahan khusus halaman jadwal agar tombol seragam */
+    .btn-page {
+        padding: 6px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        background: var(--white);
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--trans);
+    }
+    .btn-page.active {
+        background: var(--green-fresh);
+        color: white;
+        border-color: var(--green-fresh);
+        font-weight: 600;
+    }
+    .tbl-btn {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: var(--trans);
+    }
+    .tbl-btn:hover { background: #f0f4f0; }
+  </style>
+
+</div>

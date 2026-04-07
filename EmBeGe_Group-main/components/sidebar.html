@@ -1,0 +1,48 @@
+<!-- components/sidebar.html — reference only, markup lives in index.html -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-box">🍱</div>
+    <div class="brand-txt">
+      <h1>MBG</h1>
+      <span>Makanan Bergizi Gratis</span>
+    </div>
+  </div>
+
+  <div class="sidebar-section">Utama</div>
+  <div class="nav-item" data-page="dashboard" onclick="navigate(this)">
+    <div class="nav-icon">🏠</div>Dashboard
+  </div>
+
+  <div class="sidebar-section">Modul</div>
+  <div class="nav-item" data-page="siswa" onclick="navigate(this)">
+    <div class="nav-icon">👨‍🎓</div>Data Siswa
+  </div>
+  <div class="nav-item" data-page="menu" onclick="navigate(this)">
+    <div class="nav-icon">🍽️</div>Data Menu
+  </div>
+  <div class="nav-item" data-page="sekolah" onclick="navigate(this)">
+    <div class="nav-icon">🏫</div>Data Sekolah
+  </div>
+  <div class="nav-item" data-page="jadwal" onclick="navigate(this)">
+    <div class="nav-icon">📅</div>Jadwal Distribusi
+    <span class="nav-badge">3</span>
+  </div>
+  <div class="nav-item" data-page="laporan" onclick="navigate(this)">
+    <div class="nav-icon">📊</div>Laporan
+  </div>
+
+  <div class="sidebar-section">Admin</div>
+  <div class="nav-item" data-page="usermgmt" onclick="navigate(this)">
+    <div class="nav-icon">⚙️</div>User Management
+    <span class="sa-tag">SA</span>
+  </div>
+
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-user">
+    <div class="ava" id="sidebar-ava">SA</div>
+    <div class="info">
+      <div class="name" id="sidebar-name">Super Admin</div>
+      <div class="role" id="sidebar-role">Super Administrator</div>
+    </div>
+  </div>
+</div>

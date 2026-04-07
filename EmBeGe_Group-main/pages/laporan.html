@@ -1,0 +1,127 @@
+<div class="page" id="page-laporan">
+
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">MBG &rsaquo; <span>Laporan & Feedback</span></div>
+      <h2>Laporan & Feedback</h2>
+      <p>Evaluasi distribusi, penilaian gizi, dan keluhan sekolah</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-add-record" onclick="openLaporanModal()" style="background:var(--green-deep); color:white;">+ Kirim Feedback Baru</button>
+      <button class="btn-add-record" style="background:white; border:1px solid #ddd; color:#666;">⬇ Ekspor (.xlsx)</button>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+    <div class="card" style="padding:18px 20px; border-left:4px solid var(--green-fresh);">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase;">Total Porsi</div>
+      <div style="font-size:26px; font-weight:800; color:var(--text-dark); margin-top:6px;">1.834.200</div>
+    </div>
+    <div class="card" style="padding:18px 20px; border-left:4px solid #f59e0b;">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase;">Rata-rata Rating</div>
+      <div style="font-size:26px; font-weight:800; color:#f59e0b; margin-top:6px;">4.8 <span style="font-size:14px;">★</span></div>
+    </div>
+    <div class="card" style="padding:18px 20px; border-left:4px solid #e11d48;">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase;">Laporan Darurat</div>
+      <div id="stat-emergency" style="font-size:26px; font-weight:800; color:#e11d48; margin-top:6px;">0</div>
+    </div>
+    <div class="card" style="padding:18px 20px; border-left:4px solid var(--green-deep);">
+      <div style="font-size:11px; color:var(--text-light); font-weight:600; text-transform:uppercase;">Sekolah Terlayani</div>
+      <div style="font-size:26px; font-weight:800; color:var(--text-dark); margin-top:6px;">1.238</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Daftar Feedback & Keluhan Sekolah</h3>
+    </div>
+    <div class="table-wrap">
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:2px solid #eee;">
+            <th style="padding:12px;">Tanggal</th>
+            <th>Sekolah</th>
+            <th>Rating</th>
+            <th>Ulasan/Komentar</th>
+            <th>Bukti Foto</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="table-laporan-body">
+          </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="modal-laporan" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="card" style="width:500px; padding:28px; border-radius: 20px; max-height: 90vh; overflow-y: auto;">
+      <h3 style="font-family: 'Fraunces', serif;">Kirim Feedback Distribusi</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Laporkan kualitas makanan dan layanan hari ini.</p>
+      
+      <form onsubmit="sendLaporan(event)">
+        <div style="margin-bottom:15px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">TANGGAL DISTRIBUSI</label>
+          <input type="date" id="lp-tgl" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+
+        <div style="margin-bottom:15px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">NAMA SEKOLAH</label>
+          <input type="text" id="lp-sekolah" placeholder="Contoh: SDN 01 Cipayung" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+
+        <div style="margin-bottom:15px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">JUMLAH PORSI DITERIMA</label>
+          <input type="number" id="lp-porsi" placeholder="Contoh: 150" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+        </div>
+
+        <div style="margin-bottom:15px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:10px;">RATING KUALITAS GIZI & RASA</label>
+          <div style="display:flex; gap:15px; background:#f9f9f9; padding:10px; border-radius:10px;">
+            <label><input type="radio" name="rating" value="1"> ⭐1</label>
+            <label><input type="radio" name="rating" value="2"> ⭐2</label>
+            <label><input type="radio" name="rating" value="3"> ⭐3</label>
+            <label><input type="radio" name="rating" value="4"> ⭐4</label>
+            <label><input type="radio" name="rating" value="5" checked> ⭐5</label>
+          </div>
+        </div>
+
+        <div style="margin-bottom:15px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">KOMENTAR / KELUHAN</label>
+          <textarea id="lp-komentar" rows="3" placeholder="Ceritakan kondisi makanan atau kendala pengiriman..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;"></textarea>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">UPLOAD FOTO BUKTI (Jika ada keluhan)</label>
+          <input type="file" id="lp-foto" accept="image/*" style="width:100%; font-size:12px;">
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" onclick="closeLaporanModal()" style="padding:10px 20px; border:none; background:#eee; border-radius:10px; cursor:pointer;">Batal</button>
+          <button type="submit" style="padding:10px 25px; border:none; background:var(--green-deep); color:white; border-radius:10px; cursor:pointer; font-weight:700;">Kirim Laporan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Fungsi ini harus ada di sini agar tombol bisa nemu jalurnya
+  function openLaporanModal() { 
+    const modal = document.getElementById('modal-laporan');
+    if(modal) modal.style.display = 'flex'; 
+    else console.error("Modal tidak ditemukan!");
+  }
+  
+  function closeLaporanModal() { 
+    const modal = document.getElementById('modal-laporan');
+    if(modal) modal.style.display = 'none'; 
+  }
+
+  // Panggil data otomatis SETIAP KALI file HTML ini dimuat ke layar
+  if (typeof fetchLaporan === 'function') {
+      fetchLaporan();
+  } else {
+      console.error("Fungsi fetchLaporan belum terload. Cek index.html!");
+  }
+</script>

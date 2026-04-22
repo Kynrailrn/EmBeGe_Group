@@ -32,7 +32,8 @@ export default function App() {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_URL}/${page}`);
-      setData(page === 'sekolah' ? res.data.filter(u => u.role !== 'admin') : res.data);
+      // Filter role admin sudah ditangani Backend, tapi kita jaga-jaga di sini juga boleh
+      setData(res.data);
     } catch (err) {
       setData([]);
     }
@@ -59,25 +60,30 @@ export default function App() {
       setFormData({});
       fetchData();
     } catch (err) {
-      // Mengambil pesan error dari backend jika ada
       const errMsg = err.response?.data?.error || 'Cek Database!';
       alert(`Gagal menambah data: ${errMsg}`);
     }
   };
 
+  // --- LOGIKA LOGIN YANG SUDAH DIPERBAIKI ---
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.get(`${API_URL}/sekolah`); 
-      const foundUser = res.data.find(u => u.email === credentials.email && u.password_hash === credentials.password);
-      if (foundUser) {
-        setUser(foundUser);
-        setPage(foundUser.role === 'sekolah' ? 'siswa' : 'menu');
-      } else {
-        alert("Email atau Password Salah!");
+      const res = await axios.post(`${API_URL}/login`, {
+        email: credentials.email,
+        password: credentials.password
+      }); 
+      
+      if (res.data) {
+        setUser(res.data);
+        setPage(res.data.role === 'sekolah' ? 'siswa' : 'menu');
       }
     } catch (err) {
-      alert("Server Backend Belum Jalan!");
+      if (err.response && err.response.status === 401) {
+        alert("Email atau Password Salah, Ran!");
+      } else {
+        alert("Server Backend Belum Jalan!");
+      }
     }
   };
 
@@ -179,7 +185,7 @@ export default function App() {
                 />
               ))}
               <div style={{display: 'flex', gap: '10px'}}>
-                <button type="button" onClick={() => setShowModal(false)} style={{...styles.btnTambah, backgroundColor: '#94a3b8', flex: 1}}>Batal</button>
+                <button type="button" onClick={() => setShowModal(false)} style={{...styles.btnTambah, backgroundColor: '#94a3b8', flex: 1, boxShadow: 'none'}}>Batal</button>
                 <button type="submit" style={{...styles.btnTambah, flex: 1}}>Simpan</button>
               </div>
             </form>
@@ -231,6 +237,7 @@ export default function App() {
               )}
             </tbody>
           </table>
+          {!isAllowedCRUD() && <p style={{color: '#94a3b8', fontSize: '12px', marginTop: '10px'}}>* Anda hanya memiliki akses baca (View Only) di halaman ini.</p>}
         </div>
       </main>
     </div>

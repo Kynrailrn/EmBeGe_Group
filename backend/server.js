@@ -38,6 +38,7 @@ app.get('/api/laporan', async (req, res) => {
     res.status(500).json({ error: "Gagal ambil data laporan" });
   }
 });
+
 app.post('/api/laporan', upload.single('foto'), async (req, res) => {
   try {
     const { user_id, rating, komentar } = req.body;
@@ -60,13 +61,17 @@ const tableMap = {
   siswa: 'students',
   sekolah: 'users',
   jadwal: 'deliveries',
-  laporan: 'feedbacks'
+  laporan: 'feedbacks' // (Catatan: rute post/get laporan akan ter-handle oleh blok manual di atas)
 };
 
 Object.keys(tableMap).forEach(route => {
   const tableName = tableMap[route];
 
+  // READ (Ambil Semua Data)
   app.get(`/api/${route}`, async (req, res) => {
+    // Abaikan jika route adalah laporan, karena sudah di-handle di atas
+    if(route === 'laporan') return; 
+
     try {
       let query = `SELECT * FROM ??`;
       let params = [tableName];
@@ -78,6 +83,42 @@ Object.keys(tableMap).forEach(route => {
     }
   });
 
+  // CREATE (Tambah Data Baru)
+  app.post(`/api/${route}`, async (req, res) => {
+    // Abaikan jika route adalah laporan, karena sudah di-handle manual (dengan multer)
+    if(route === 'laporan') return;
+
+    try {
+      const data = req.body;
+      if (Object.keys(data).length === 0) {
+        return res.status(400).json({ error: "Data tidak boleh kosong" });
+      }
+      const [result] = await db.query(`INSERT INTO ?? SET ?`, [tableName, data]);
+      res.status(201).json({ 
+        message: `Data di ${route} berhasil ditambahkan`,
+        id: result.insertId, 
+        ...data 
+      });
+    } catch (err) {
+      console.error(`Error POST /api/${route}:`, err.message);
+      res.status(500).json({ error: "Gagal menambah data" });
+    }
+  });
+
+  // UPDATE (Edit Data berdasarkan ID)
+  app.put(`/api/${route}/:id`, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = req.body;
+      await db.query(`UPDATE ?? SET ? WHERE id = ?`, [tableName, data, id]);
+      res.json({ message: `Data di ${route} berhasil diperbarui` });
+    } catch (err) {
+      console.error(`Error PUT /api/${route}:`, err.message);
+      res.status(500).json({ error: "Gagal memperbarui data" });
+    }
+  });
+
+  // DELETE (Hapus Data berdasarkan ID)
   app.delete(`/api/${route}/:id`, async (req, res) => {
     try {
       const { id } = req.params;
@@ -101,7 +142,20 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// --- Middleware Error 404 Custom (Penangkap Rute yang Tidak Ada) ---
+app.use((req, res) => {
+  res.status(404).json({ error: "Rute API tidak ditemukan" });
+});
+
 // --- 4. START SERVER ---
-db.getConnection().then(() => console.log('✅ Database Terhubung!'));
+db.getConnection()
+  .then((conn) => {
+    console.log('✅ Database Terhubung!');
+    conn.release(); 
+  })
+  .catch((err) => {
+    console.error('❌ Gagal Konek Database:', err.message);
+  });
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Backend jalan di port ${PORT}`));

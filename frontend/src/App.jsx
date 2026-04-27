@@ -54,30 +54,43 @@ export default function App() {
   };
 
   const handleUpload = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Validasi rating agar 1-5 saja
-  if (formData.rating > 5) {
-    alert("Rating maksimal 5!");
-    return;
-  }
-  const data = new FormData();
-  data.append('user_id', user.id); // Ambil dari user yang login
-  data.append('rating', formData.rating);
-  data.append('komentar', formData.komentar);
-  data.append('foto', file); // 'file' adalah state yang lo buat tadi
+    // Validasi rating agar 1-5 saja
+    if (formData.rating > 5) {
+      alert("Rating maksimal 5!");
+      return;
+    }
+    const uploadData = new FormData();
+    uploadData.append('user_id', user.id); // Ambil dari user yang login
+    uploadData.append('rating', formData.rating);
+    uploadData.append('komentar', formData.komentar);
+    uploadData.append('foto', file); // 'file' adalah state yang lo buat tadi
 
-  try {
-    await axios.post(`${API_URL}/laporan`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    setShowModal(false);
-    setFormData({});
-    fetchData(); // Refresh tabel
-  } catch (err) {
-    alert('Gagal Upload: ' + (err.response?.data?.error || err.message));
-  }
-};
+    try {
+      await axios.post(`${API_URL}/laporan`, uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setShowModal(false);
+      setFormData({});
+      fetchData(); // Refresh tabel
+    } catch (err) {
+      alert('Gagal Upload: ' + (err.response?.data?.error || err.message));
+    }
+  };
+
+  // --- FUNGSI BARU UNTUK CRUD MENU, SISWA, DLL ---
+  const handleSimpan = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API_URL}/${page}`, formData); 
+      setShowModal(false);
+      setFormData({});
+      fetchData(); // Refresh tabel setelah berhasil
+    } catch (err) {
+      alert('Gagal Simpan: ' + (err.response?.data?.error || err.message));
+    }
+  };
 
   // --- LOGIKA LOGIN YANG SUDAH DIPERBAIKI ---
   const handleLogin = async (e) => {
@@ -145,29 +158,27 @@ export default function App() {
       )
     },
     laporan: { 
-  title: 'Laporan Feedback', icon: '📊', 
-  headers: ['Sekolah', 'Komentar', 'Rating', 'Bukti'], 
-  canCRUD: true, 
-  fields: ['komentar', 'rating', 'foto'], 
-  render: (item) => (
-    <>
-      {/* Jika Admin, tampilkan Nama Sekolah. Jika bukan, tampilkan ID */}
-      <td style={styles.td}><strong>{item.nama_sekolah}</strong></td> 
-    <td style={styles.td}><em>"{item.komentar}"</em></td>
-    {/* Tampilkan bintang sesuai angka, max 5 bintang */}
-    <td style={styles.td}>
-      {[...Array(5)].map((_, i) => (
-        <span key={i} style={{ color: i < item.rating ? '#fbbf24' : '#e2e8f0' }}>★</span>
-      ))}
-    </td>
-    <td style={styles.td}>
-      {item.foto_bukti_url ? (
-        <a href={`http://localhost:5000/${item.foto_bukti_url}`} target="_blank" rel="noreferrer">Lihat Bukti</a>
-      ) : '-'}
-    </td>
-  </>
-)
-}
+      title: 'Laporan Feedback', icon: '📊', 
+      headers: ['Sekolah', 'Komentar', 'Rating', 'Bukti'], 
+      canCRUD: true, 
+      fields: ['komentar', 'rating', 'foto'], 
+      render: (item) => (
+        <>
+          <td style={styles.td}><strong>{item.nama_sekolah}</strong></td> 
+          <td style={styles.td}><em>"{item.komentar}"</em></td>
+          <td style={styles.td}>
+            {[...Array(5)].map((_, i) => (
+              <span key={i} style={{ color: i < item.rating ? '#fbbf24' : '#e2e8f0' }}>★</span>
+            ))}
+          </td>
+          <td style={styles.td}>
+            {item.foto_bukti_url ? (
+              <a href={`http://localhost:5000/${item.foto_bukti_url.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer">Lihat Bukti</a>
+            ) : '-'}
+          </td>
+        </>
+      )
+    }
   };
 
   const isAllowedCRUD = () => user?.role === 'admin' || menuConfig[page].canCRUD;
@@ -194,43 +205,44 @@ export default function App() {
         <div style={styles.modalOverlay}>
           <div style={{...styles.loginCard, marginTop: 0}}>
             <h3 style={{marginBottom: '20px', color: '#1e293b'}}>Tambah {page}</h3>
-            <form onSubmit={handleUpload}>
-  {menuConfig[page].fields?.map(f => (
-  f === 'foto' ? (
-    <input 
-      key={f} 
-      type="file" 
-      onChange={(e) => setFile(e.target.files[0])} 
-    />
-  ) : f === 'rating' ? (
-    <select 
-      key={f} 
-      style={styles.input} 
-      required
-      onChange={e => setFormData({...formData, rating: parseInt(e.target.value)})}
-    >
-      <option value="">PILIH RATING</option>
-      {[1, 2, 3, 4, 5].map(num => (
-        <option key={num} value={num}>{'★'.repeat(num)}</option>
-      ))}
-    </select>
-  ) : (
-    <input 
-      key={f} 
-      style={styles.input} 
-      placeholder={f.replace('_', ' ').toUpperCase()} 
-      type={f === 'kalori' || f.includes('_id') ? 'number' : 'text'}
-      required 
-      onChange={e => {
-        const val = e.target.value;
-        setFormData({
-          ...formData, 
-          [f]: (f === 'kalori' || f.includes('_id')) ? parseInt(val) : val 
-        });
-      }} 
-    />
-  )
-))}
+            {/* LOGIKA FORM ONSUBMIT YANG DIPERBAIKI */}
+            <form onSubmit={page === 'laporan' ? handleUpload : handleSimpan}>
+              {menuConfig[page].fields?.map(f => (
+                f === 'foto' ? (
+                  <input 
+                    key={f} 
+                    type="file" 
+                    onChange={(e) => setFile(e.target.files[0])} 
+                  />
+                ) : f === 'rating' ? (
+                  <select 
+                    key={f} 
+                    style={styles.input} 
+                    required
+                    onChange={e => setFormData({...formData, rating: parseInt(e.target.value)})}
+                  >
+                    <option value="">PILIH RATING</option>
+                    {[1, 2, 3, 4, 5].map(num => (
+                      <option key={num} value={num}>{'★'.repeat(num)}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input 
+                    key={f} 
+                    style={styles.input} 
+                    placeholder={f.replace('_', ' ').toUpperCase()} 
+                    type={f === 'kalori' || f.includes('_id') ? 'number' : 'text'}
+                    required 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setFormData({
+                        ...formData, 
+                        [f]: (f === 'kalori' || f.includes('_id')) ? parseInt(val) : val 
+                      });
+                    }} 
+                  />
+                )
+              ))}
               <div style={{display: 'flex', gap: '10px'}}>
                 <button type="button" onClick={() => setShowModal(false)} style={{...styles.btnTambah, backgroundColor: '#94a3b8', flex: 1, boxShadow: 'none'}}>Batal</button>
                 <button type="submit" style={{...styles.btnTambah, flex: 1}}>Simpan</button>
@@ -269,29 +281,28 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
-  {data.map((item, i) => (
-    <tr key={item.id || i}>
-      <td style={styles.td}>{i + 1}</td>
-      {menuConfig[page].render(item)}
-      
-      {/* Tombol Aksi (Hapus) dengan Logika Kepemilikan */}
-      {isAllowedCRUD() && (
-        <td style={styles.td}>
-          {(user.role === 'admin' || user.id === item.user_id) ? (
-            <button 
-              onClick={() => handleDelete(item.id)} 
-              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '18px' }}
-            >
-              🗑️
-            </button>
-          ) : (
-            <span style={{color: '#cbd5e1', fontSize: '12px'}}>Dikunci</span>
-          )}
-        </td>
-      )}
-    </tr>
-  ))}
-</tbody>
+              {data.map((item, i) => (
+                <tr key={item.id || i}>
+                  <td style={styles.td}>{i + 1}</td>
+                  {menuConfig[page].render(item)}
+                  
+                  {isAllowedCRUD() && (
+                    <td style={styles.td}>
+                      {(user.role === 'admin' || user.id === item.user_id) ? (
+                        <button 
+                          onClick={() => handleDelete(item.id)} 
+                          style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '18px' }}
+                        >
+                          🗑️
+                        </button>
+                      ) : (
+                        <span style={{color: '#cbd5e1', fontSize: '12px'}}>Dikunci</span>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
           </table>
           {!isAllowedCRUD() && <p style={{color: '#94a3b8', fontSize: '12px', marginTop: '10px'}}>* Anda hanya memiliki akses baca (View Only) di halaman ini.</p>}
         </div>

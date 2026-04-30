@@ -28,13 +28,24 @@ export default function App() {
   const [formData, setFormData] = useState({});
   const [file, setFile] = useState(null);
 
+  // State untuk Dropdown Form Jadwal
+  const [listMenu, setListMenu] = useState([]);
+  const [listSekolah, setListSekolah] = useState([]);
+
   const API_URL = 'http://localhost:5000/api';
 
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_URL}/${page}`);
-      // Filter role admin sudah ditangani Backend, tapi kita jaga-jaga di sini juga boleh
       setData(res.data);
+
+      // Tarik daftar Menu dan Sekolah untuk Dropdown saat di halaman Jadwal
+      if (page === 'jadwal') {
+        const resMenu = await axios.get(`${API_URL}/menu`);
+        setListMenu(resMenu.data);
+        const resSekolah = await axios.get(`${API_URL}/sekolah`);
+        setListSekolah(resSekolah.data);
+      }
     } catch (err) {
       setData([]);
     }
@@ -55,63 +66,41 @@ export default function App() {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-
-    // Validasi rating agar 1-5 saja
-    if (formData.rating > 5) {
-      alert("Rating maksimal 5!");
-      return;
-    }
+    if (formData.rating > 5) return alert("Rating maksimal 5!");
+    
     const uploadData = new FormData();
-    uploadData.append('user_id', user.id); // Ambil dari user yang login
+    uploadData.append('user_id', user.id); 
     uploadData.append('rating', formData.rating);
     uploadData.append('komentar', formData.komentar);
-    uploadData.append('foto', file); // 'file' adalah state yang lo buat tadi
+    uploadData.append('foto', file); 
 
     try {
-      await axios.post(`${API_URL}/laporan`, uploadData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await axios.post(`${API_URL}/laporan`, uploadData, { headers: { 'Content-Type': 'multipart/form-data' } });
       setShowModal(false);
       setFormData({});
-      fetchData(); // Refresh tabel
-    } catch (err) {
-      alert('Gagal Upload: ' + (err.response?.data?.error || err.message));
-    }
+      fetchData(); 
+    } catch (err) { alert('Gagal Upload'); }
   };
 
-  // --- FUNGSI BARU UNTUK CRUD MENU, SISWA, DLL ---
   const handleSimpan = async (e) => {
     e.preventDefault();
     try {
       await axios.post(`${API_URL}/${page}`, formData); 
       setShowModal(false);
       setFormData({});
-      fetchData(); // Refresh tabel setelah berhasil
-    } catch (err) {
-      alert('Gagal Simpan: ' + (err.response?.data?.error || err.message));
-    }
+      fetchData(); 
+    } catch (err) { alert('Gagal Simpan: ' + (err.response?.data?.error || err.message)); }
   };
 
-  // --- LOGIKA LOGIN YANG SUDAH DIPERBAIKI ---
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_URL}/login`, {
-        email: credentials.email,
-        password: credentials.password
-      }); 
-      
+      const res = await axios.post(`${API_URL}/login`, { email: credentials.email, password: credentials.password }); 
       if (res.data) {
         setUser(res.data);
         setPage(res.data.role === 'sekolah' ? 'siswa' : 'menu');
       }
-    } catch (err) {
-      if (err.response && err.response.status === 401) {
-        alert("Email atau Password Salah, Ran!");
-      } else {
-        alert("Server Backend Belum Jalan!");
-      }
-    }
+    } catch (err) { alert("Email atau Password Salah!"); }
   };
 
   const menuConfig = {
@@ -148,34 +137,32 @@ export default function App() {
       )
     },
     jadwal: { 
-      title: 'Jadwal Distribusi MBG', icon: '📅', headers: ['ID Jadwal', 'Tanggal Pengiriman', 'ID Menu'], canCRUD: false,
+      title: 'Jadwal Distribusi MBG', icon: '🚚', headers: ['Hari & Tanggal', 'Sekolah Tujuan', 'Menu Dikirim', 'Total Porsi'], canCRUD: false,
+      fields: ['tanggal', 'sekolah_id', 'menu_id'], // Tambah sekolah_id di form
       render: (item) => (
         <>
-          <td style={styles.td}><code>#SCH-{item.id}</code></td>
-          <td style={styles.td}><strong>{new Date(item.tanggal).toLocaleDateString('id-ID')}</strong></td>
-          <td style={styles.td}>Menu ID: {item.menu_id}</td>
+          <td style={styles.td}>
+            <strong>{new Date(item.tanggal).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+          </td>
+          <td style={styles.td}><strong>{item.nama_sekolah}</strong></td>
+          <td style={styles.td}>
+            {item.nama_menu || 'Menu Tidak Ditemukan'} <br/>
+            <span style={{fontSize: '11px', color: '#64748b'}}>ID Menu: {item.menu_id}</span>
+          </td>
+          <td style={styles.td}>
+            <span style={{...styles.badge, backgroundColor: '#dbeafe', color: '#1e40af', fontSize: '14px', padding: '8px 15px'}}>📦 {item.jumlah_porsi} Porsi</span>
+          </td>
         </>
       )
     },
     laporan: { 
-      title: 'Laporan Feedback', icon: '📊', 
-      headers: ['Sekolah', 'Komentar', 'Rating', 'Bukti'], 
-      canCRUD: true, 
-      fields: ['komentar', 'rating', 'foto'], 
+      title: 'Laporan Feedback', icon: '📊', headers: ['Sekolah', 'Komentar', 'Rating', 'Bukti'], canCRUD: true, fields: ['komentar', 'rating', 'foto'], 
       render: (item) => (
         <>
           <td style={styles.td}><strong>{item.nama_sekolah}</strong></td> 
           <td style={styles.td}><em>"{item.komentar}"</em></td>
-          <td style={styles.td}>
-            {[...Array(5)].map((_, i) => (
-              <span key={i} style={{ color: i < item.rating ? '#fbbf24' : '#e2e8f0' }}>★</span>
-            ))}
-          </td>
-          <td style={styles.td}>
-            {item.foto_bukti_url ? (
-              <a href={`http://localhost:5000/${item.foto_bukti_url.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer">Lihat Bukti</a>
-            ) : '-'}
-          </td>
+          <td style={styles.td}>{[...Array(5)].map((_, i) => (<span key={i} style={{ color: i < item.rating ? '#fbbf24' : '#e2e8f0' }}>★</span>))}</td>
+          <td style={styles.td}>{item.foto_bukti_url ? (<a href={`http://localhost:5000/${item.foto_bukti_url.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer">Lihat Bukti</a>) : '-'}</td>
         </>
       )
     }
@@ -205,40 +192,33 @@ export default function App() {
         <div style={styles.modalOverlay}>
           <div style={{...styles.loginCard, marginTop: 0}}>
             <h3 style={{marginBottom: '20px', color: '#1e293b'}}>Tambah {page}</h3>
-            {/* LOGIKA FORM ONSUBMIT YANG DIPERBAIKI */}
             <form onSubmit={page === 'laporan' ? handleUpload : handleSimpan}>
               {menuConfig[page].fields?.map(f => (
                 f === 'foto' ? (
-                  <input 
-                    key={f} 
-                    type="file" 
-                    onChange={(e) => setFile(e.target.files[0])} 
-                  />
+                  <input key={f} type="file" onChange={(e) => setFile(e.target.files[0])} />
                 ) : f === 'rating' ? (
-                  <select 
-                    key={f} 
-                    style={styles.input} 
-                    required
-                    onChange={e => setFormData({...formData, rating: parseInt(e.target.value)})}
-                  >
+                  <select key={f} style={styles.input} required onChange={e => setFormData({...formData, rating: parseInt(e.target.value)})}>
                     <option value="">PILIH RATING</option>
-                    {[1, 2, 3, 4, 5].map(num => (
-                      <option key={num} value={num}>{'★'.repeat(num)}</option>
-                    ))}
+                    {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>{'★'.repeat(num)}</option>)}
+                  </select>
+                ) : f === 'sekolah_id' && page === 'jadwal' ? (
+                  <select key={f} style={styles.input} required onChange={e => setFormData({...formData, [f]: parseInt(e.target.value)})}>
+                    <option value="">PILIH SEKOLAH TUJUAN</option>
+                    {listSekolah.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
+                  </select>
+                ) : f === 'menu_id' && page === 'jadwal' ? (
+                  <select key={f} style={styles.input} required onChange={e => setFormData({...formData, [f]: parseInt(e.target.value)})}>
+                    <option value="">PILIH MENU DIKIRIM</option>
+                    {listMenu.map(m => <option key={m.id} value={m.id}>{m.nama_menu}</option>)}
                   </select>
                 ) : (
                   <input 
-                    key={f} 
-                    style={styles.input} 
-                    placeholder={f.replace('_', ' ').toUpperCase()} 
-                    type={f === 'kalori' || f.includes('_id') ? 'number' : 'text'}
+                    key={f} style={styles.input} placeholder={f.replace('_', ' ').toUpperCase()} 
+                    type={f === 'kalori' || f.includes('_id') ? 'number' : f === 'tanggal' ? 'date' : 'text'} 
                     required 
                     onChange={e => {
                       const val = e.target.value;
-                      setFormData({
-                        ...formData, 
-                        [f]: (f === 'kalori' || f.includes('_id')) ? parseInt(val) : val 
-                      });
+                      setFormData({...formData, [f]: (f === 'kalori' || f.includes('_id')) ? parseInt(val) : val });
                     }} 
                   />
                 )
@@ -282,22 +262,14 @@ export default function App() {
             </thead>
             <tbody>
               {data.map((item, i) => (
-                <tr key={item.id || i}>
+                <tr key={`${item.id || 'x'}-${i}`}>
                   <td style={styles.td}>{i + 1}</td>
                   {menuConfig[page].render(item)}
-                  
                   {isAllowedCRUD() && (
                     <td style={styles.td}>
                       {(user.role === 'admin' || user.id === item.user_id) ? (
-                        <button 
-                          onClick={() => handleDelete(item.id)} 
-                          style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '18px' }}
-                        >
-                          🗑️
-                        </button>
-                      ) : (
-                        <span style={{color: '#cbd5e1', fontSize: '12px'}}>Dikunci</span>
-                      )}
+                        <button onClick={() => handleDelete(item.id)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '18px' }}>🗑️</button>
+                      ) : (<span style={{color: '#cbd5e1', fontSize: '12px'}}>Dikunci</span>)}
                     </td>
                   )}
                 </tr>

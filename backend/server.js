@@ -6,12 +6,10 @@ const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// Koneksi Database
 const db = mysql.createPool({
   host: 'localhost',
   user: 'root',
@@ -22,11 +20,8 @@ const db = mysql.createPool({
   queueLimit: 0
 }).promise();
 
-// --- 1. ENDPOINT MANUAL (Upload & Laporan) ---
-
 app.get('/api/laporan', async (req, res) => {
   try {
-    // Kita JOIN tabel feedbacks dengan users untuk dapet 'nama' sekolah
     const query = `
       SELECT feedbacks.*, users.nama AS nama_sekolah 
       FROM feedbacks 
@@ -47,32 +42,50 @@ app.post('/api/laporan', upload.single('foto'), async (req, res) => {
     
     const sql = 'INSERT INTO feedbacks (user_id, schedule_id, rating, komentar, foto_bukti_url) VALUES (?, ?, ?, ?, ?)';
     await db.query(sql, [user_id || 1, schedule_id, rating || 0, komentar, foto]);
-    
     res.json({ message: "Berhasil simpan laporan!" });
   } catch (err) {
-    console.error("Error Detail:", err.sqlMessage || err.message);
     res.status(500).json({ error: err.sqlMessage || err.message });
   }
 });
 
-// --- 2. LOGIKA CRUD OTOMATIS ---
 const tableMap = {
   menu: 'menus',
   siswa: 'students',
   sekolah: 'users',
-  jadwal: 'deliveries',
-  laporan: 'feedbacks' // (Catatan: rute post/get laporan akan ter-handle oleh blok manual di atas)
+  jadwal: 'schedules',
+  laporan: 'feedbacks'
 };
 
 Object.keys(tableMap).forEach(route => {
   const tableName = tableMap[route];
 
-  // READ (Ambil Semua Data)
   app.get(`/api/${route}`, async (req, res) => {
-    // Abaikan jika route adalah laporan, karena sudah di-handle di atas
     if(route === 'laporan') return; 
 
     try {
+      // LOGIKA JADWAL YANG SUDAH MENYERTAKAN SEKOLAH SPESIFIK
+      if (route === 'jadwal') {
+        const query = `
+          SELECT 
+            s.id AS id, 
+            s.tanggal,
+            m.id AS menu_id,
+            m.nama_menu,
+            u.id AS sekolah_id,
+            u.nama AS nama_sekolah,
+            COUNT(st.id) AS jumlah_porsi
+          FROM schedules s
+          LEFT JOIN menus m ON s.menu_id = m.id
+          INNER JOIN users u ON s.sekolah_id = u.id 
+          LEFT JOIN students st ON u.id = st.sekolah_id
+          WHERE u.role = 'sekolah'
+          GROUP BY s.id, u.id, m.id, s.tanggal, m.nama_menu, u.nama
+          ORDER BY s.tanggal DESC, u.nama ASC
+        `;
+        const [rows] = await db.query(query);
+        return res.json(rows);
+      }
+
       let query = `SELECT * FROM ??`;
       let params = [tableName];
       if (route === 'sekolah') query = `SELECT * FROM ?? WHERE role != 'admin'`;
@@ -83,79 +96,52 @@ Object.keys(tableMap).forEach(route => {
     }
   });
 
-  // CREATE (Tambah Data Baru)
   app.post(`/api/${route}`, async (req, res) => {
-    // Abaikan jika route adalah laporan, karena sudah di-handle manual (dengan multer)
     if(route === 'laporan') return;
-
     try {
       const data = req.body;
-      if (Object.keys(data).length === 0) {
-        return res.status(400).json({ error: "Data tidak boleh kosong" });
-      }
+      if (Object.keys(data).length === 0) return res.status(400).json({ error: "Data tidak boleh kosong" });
       const [result] = await db.query(`INSERT INTO ?? SET ?`, [tableName, data]);
-      res.status(201).json({ 
-        message: `Data di ${route} berhasil ditambahkan`,
-        id: result.insertId, 
-        ...data 
-      });
+      res.status(201).json({ message: `Berhasil`, id: result.insertId, ...data });
     } catch (err) {
-      console.error(`Error POST /api/${route}:`, err.message);
       res.status(500).json({ error: "Gagal menambah data" });
     }
   });
 
-  // UPDATE (Edit Data berdasarkan ID)
   app.put(`/api/${route}/:id`, async (req, res) => {
     try {
       const { id } = req.params;
       const data = req.body;
       await db.query(`UPDATE ?? SET ? WHERE id = ?`, [tableName, data, id]);
-      res.json({ message: `Data di ${route} berhasil diperbarui` });
+      res.json({ message: `Berhasil` });
     } catch (err) {
-      console.error(`Error PUT /api/${route}:`, err.message);
-      res.status(500).json({ error: "Gagal memperbarui data" });
+      res.status(500).json({ error: "Gagal" });
     }
   });
 
-  // DELETE (Hapus Data berdasarkan ID)
   app.delete(`/api/${route}/:id`, async (req, res) => {
     try {
       const { id } = req.params;
       await db.query(`DELETE FROM ?? WHERE id = ?`, [tableName, id]);
-      res.json({ message: "Data berhasil dihapus" });
+      res.json({ message: "Berhasil" });
     } catch (err) {
-      res.status(500).json({ error: "Gagal menghapus data" });
+      res.status(500).json({ error: "Gagal" });
     }
   });
 });
 
-// --- 3. LOGIN ---
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const [rows] = await db.query(`SELECT * FROM users WHERE email = ? AND password_hash = ?`, [email, password]);
     if (rows.length > 0) res.json(rows[0]);
-    else res.status(401).json({ error: "Email atau Password salah" });
+    else res.status(401).json({ error: "Salah" });
   } catch (err) {
-    res.status(500).json({ error: "Server Error" });
+    res.status(500).json({ error: "Error" });
   }
 });
 
-// --- Middleware Error 404 Custom (Penangkap Rute yang Tidak Ada) ---
-app.use((req, res) => {
-  res.status(404).json({ error: "Rute API tidak ditemukan" });
-});
-
-// --- 4. START SERVER ---
-db.getConnection()
-  .then((conn) => {
-    console.log('✅ Database Terhubung!');
-    conn.release(); 
-  })
-  .catch((err) => {
-    console.error('❌ Gagal Konek Database:', err.message);
-  });
+db.getConnection().then((conn) => { console.log('✅ Database Terhubung!'); conn.release(); });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Backend jalan di port ${PORT}`));

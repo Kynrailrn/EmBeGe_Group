@@ -1,0 +1,24 @@
+Cara Menjalankan
+
+Terminal 1 (Backend): cd backend -> node server.js
+
+Terminal 2 (Frontend): cd frontend -> npm run dev
+
+Nyalain juga xampp/laragon nya 
+
+ini kalo mau login
+
+    1	Super Admin MBG	ID: admin@mbg.com	PW: admin123
+    2	Admin Sekolah Depok	ID: smkn1depok@sch.id	PW: depok123
+
+Buka browser di alamat yang dikasih Vite (biasanya localhost:5173).
+
+
+
+
+membuat folder controller crud dari masing-masing fitur 
+membuat folder model untuk query database dan moudle exportnya kirim ke controller
+membuat folder routes dan di isi dengan file api/web.js setlah itu export module nya ke server.js
+membuat folder middleware yang berisi auth.js dan authorize.js
+membuat folder utils yang di mana berisi erroe.js dan validate.js ,ini utliti untuk respon erorr dan validasi pada controller
+    saran kalo bisa isi server.js seperti praktikum pertemuan 2/3 soalnya biar enggak pusing bacanya

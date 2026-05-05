@@ -63,7 +63,6 @@ Object.keys(tableMap).forEach(route => {
     if(route === 'laporan') return; 
 
     try {
-      // LOGIKA JADWAL YANG SUDAH MENYERTAKAN SEKOLAH SPESIFIK
       if (route === 'jadwal') {
         const query = `
           SELECT 
@@ -86,9 +85,18 @@ Object.keys(tableMap).forEach(route => {
         return res.json(rows);
       }
 
+      // --- BAGIAN YANG DITAMBAHKAN ---
       let query = `SELECT * FROM ??`;
       let params = [tableName];
-      if (route === 'sekolah') query = `SELECT * FROM ?? WHERE role != 'admin'`;
+
+      if (route === 'sekolah') {
+        query = `SELECT * FROM ?? WHERE role != 'admin'`;
+      } else if (route === 'siswa') {
+        // Data siswa akan otomatis diurutkan berdasarkan Nama (A-Z)
+        query = `SELECT * FROM ?? ORDER BY nama_siswa ASC`;
+      }
+      // -------------------------------
+
       const [rows] = await db.query(query, params);
       res.json(rows);
     } catch (err) {

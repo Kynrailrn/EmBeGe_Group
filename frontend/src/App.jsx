@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 
 const styles = {
@@ -56,110 +56,88 @@ const styles = {
   }
 };
 
-export default function App() {
-  const [user, setUser] = useState(null); 
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
-  const [page, setPage] = useState('menu');
-  const [data, setData] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [file, setFile] = useState(null);
+// --- DASHBOARD STYLES ---
+const ds = {
+  container:    { display: 'flex', height: '100vh', overflow: 'hidden', backgroundColor: '#f0fdf8', fontFamily: "'Plus Jakarta Sans', sans-serif" },
+  sidebar:      { width: '280px', backgroundColor: '#1e293b', color: 'white', padding: '25px', display: 'flex', flexDirection: 'column' },
+  main:         { flex: 1, padding: '40px', height: '100vh', overflowY: 'auto', position: 'relative' },
+  navItem:      { padding: '18px 20px', cursor: 'pointer', borderRadius: '12px', marginBottom: '10px', transition: '0.3s', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '500' },
+  card:         { backgroundColor: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.06)', position: 'relative', zIndex: 1 },
+  modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(2px)' },
+  modalCard:    { background: 'white', padding: '32px 28px', borderRadius: '20px', width: '460px', boxShadow: '0 24px 48px rgba(0,0,0,0.15)' },
+};
 
   const API_URL = 'http://localhost:5173/api';
 
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_URL}/${page}`);
-      // Filter role admin sudah ditangani Backend, tapi kita jaga-jaga di sini juga boleh
       setData(res.data);
-    } catch (err) {
-      setData([]);
-    }
+    } catch { setData([]); }
   };
 
   useEffect(() => { if (user) fetchData(); }, [page, user]);
 
+  // ── CRUD handlers ──
   const handleDelete = async (id) => {
-    if (window.confirm('Yakin ingin menghapus data ini?')) {
-      try {
-        await axios.delete(`${API_URL}/${page}/${id}`);
-        fetchData();
-      } catch (err) {
-        alert('Gagal menghapus data');
-      }
-    }
+    if (!window.confirm('Yakin ingin menghapus data ini?')) return;
+    try {
+      await axios.delete(`${API_URL}/${page}/${id}`);
+      fetchData();
+    } catch { alert('Gagal menghapus data.'); }
   };
 
-  const handleUpload = async (e) => {
-  e.preventDefault();
-
-  // Validasi rating agar 1-5 saja
-  if (formData.rating > 5) {
-    alert("Rating maksimal 5!");
-    return;
-  }
-  const data = new FormData();
-  data.append('user_id', user.id); // Ambil dari user yang login
-  data.append('rating', formData.rating);
-  data.append('komentar', formData.komentar);
-  data.append('foto', file); // 'file' adalah state yang lo buat tadi
-
-  try {
-    await axios.post(`${API_URL}/laporan`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    setShowModal(false);
-    setFormData({});
-    fetchData(); // Refresh tabel
-  } catch (err) {
-    alert('Gagal Upload: ' + (err.response?.data?.error || err.message));
-  }
-};
-
-  // --- LOGIKA LOGIN YANG SUDAH DIPERBAIKI ---
-  const handleLogin = async (e) => {
+  const handleSimpan = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_URL}/login`, {
-        email: credentials.email,
-        password: credentials.password
-      }); 
-      
+      if (editId) {
+        await axios.put(`${API_URL}/${page}/${editId}`, formData);
+      } else {
+        await axios.post(`${API_URL}/${page}`, formData);
+      }
+      setShowModal(false);
+      setFormData({});
+      setEditId(null);
+      fetchData();
+    } catch { alert('Gagal menyimpan data.'); }
+  };
+
+  const openTambah = (defaultData = {}) => {
+    setEditId(null);
+    setFormData(defaultData);
+    setShowModal(true);
+  };
+
+  const openEdit = (item) => {
+    setEditId(item.id);
+    setFormData({ ...item });
+    setShowModal(true);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/login`, credentials);
       if (res.data) {
         setUser(res.data);
         setPage(res.data.role === 'sekolah' ? 'siswa' : 'menu');
       }
-    } catch (err) {
-      if (err.response && err.response.status === 401) {
-        alert("Email atau Password Salah, Ran!");
-      } else {
-        alert("Server Backend Belum Jalan!");
-      }
-    }
+    } catch { alert('Email atau Password salah!'); }
+    finally { setIsLoading(false); }
   };
 
   const menuConfig = {
-    menu: { 
-      title: 'Daftar Menu Makanan', icon: '🍱', headers: ['Menu', 'Energi', 'Deskripsi'], canCRUD: true, 
-      fields: ['nama_menu', 'kalori', 'deskripsi'],
-      render: (item) => (
-        <>
-          <td style={styles.td}><strong>{item.nama_menu}</strong></td>
-          <td style={styles.td}><span style={{...styles.badge, backgroundColor: '#dcfce7', color: '#166534'}}>{item.kalori} kkal</span></td>
-          <td style={styles.td}>{item.deskripsi || '-'}</td>
-        </>
-      )
+    menu:    { title: 'Daftar Menu Makanan',    icon: '🍱' },
+    siswa:   { title: 'Manajemen Data Siswa',   icon: '👥' },
+    sekolah: { title: 'Manajemen Data Sekolah', icon: '🏫' },
+    jadwal:  { title: 'Jadwal Distribusi MBG',  icon: '🚚',
+      headers: ['Tanggal', 'Sekolah', 'Menu'],
+      render: (it) => <><td style={{ padding: '16px', fontSize: '14px' }}>{it.tanggal}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.nama_sekolah}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.nama_menu}</td></>,
     },
-    siswa: { 
-      title: 'Data Daftar Siswa', icon: '👥', headers: ['Nama Siswa', 'Kelas', 'ID Sekolah'], canCRUD: true,
-      fields: ['nama_siswa', 'kelas', 'sekolah_id'],
-      render: (item) => (
-        <>
-          <td style={styles.td}><strong>{item.nama_siswa}</strong></td>
-          <td style={styles.td}>{item.kelas}</td>
-          <td style={styles.td}><code style={{background: '#f1f5f9', padding: '2px 6px'}}>{item.sekolah_id}</code></td>
-        </>
-      )
+    laporan: { title: 'Feedback & Laporan',     icon: '📊',
+      headers: ['Sekolah', 'Komentar', 'Rating'],
+      render: (it) => <><td style={{ padding: '16px', fontSize: '14px' }}>{it.nama_sekolah}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.komentar}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.rating} ★</td></>,
     },
     sekolah: { 
       title: 'Data Daftar Sekolah', icon: '🏫', headers: ['Nama Sekolah', 'Email', 'Role'], canCRUD: false,
@@ -253,132 +231,156 @@ export default function App() {
 }
   };
 
-  const isAllowedCRUD = () => user?.role === 'admin' || menuConfig[page].canCRUD;
-
+  // ── Login Screen ──
   if (!user) {
     return (
-      <div style={styles.landing}>
-        <h1 style={styles.heroTitle}>MBG Project</h1>
-        <div style={styles.loginCard}>
-          <h3 style={{color: '#1e293b', marginBottom: '20px'}}>Sistem Login</h3>
+      <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0a1628', color: 'white', fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'relative', overflow: 'hidden' }}>
+        <OrbBackground />
+        <div className="mbg-logo-box" style={{ marginBottom: '18px', zIndex: 1 }}>
+          <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 700, animation: 'pulse-glow 3s infinite' }}>MBG</div>
+        </div>
+        <h1 className="mbg-hero-title" style={{ fontFamily: "'Sora', sans-serif", fontSize: '2.4rem', color: '#10b981', zIndex: 1 }}>MBG Project</h1>
+        <div ref={cardRef} className="mbg-card" style={{ position: 'relative', background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.11)', padding: '34px 30px', borderRadius: '24px', width: '390px', zIndex: 1 }}>
+          <CursorGlow cardRef={cardRef} />
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '4px' }}>Selamat Datang</h2>
+          <p style={{ fontSize: '0.78rem', color: 'rgba(148,163,184,0.65)', marginBottom: '26px' }}>Masuk untuk mengakses sistem</p>
           <form onSubmit={handleLogin}>
-            <input style={styles.input} type="email" placeholder="Email (admin@mbg.com)" required onChange={e => setCredentials({...credentials, email: e.target.value})} />
-            <input style={styles.input} type="password" placeholder="Password" required onChange={e => setCredentials({...credentials, password: e.target.value})} />
-            <button type="submit" style={{...styles.btnTambah, width: '100%'}}>Masuk</button>
+            <input className="mbg-input-field" type="email" placeholder="Email" required onChange={e => setCredentials({ ...credentials, email: e.target.value })} />
+            <input className="mbg-input-field" type="password" placeholder="Password" required onChange={e => setCredentials({ ...credentials, password: e.target.value })} />
+            <button type="submit" className="mbg-btn-login" disabled={isLoading}>
+              {isLoading ? <><div className="mbg-spinner" /> Memuat...</> : 'Masuk'}
+            </button>
           </form>
         </div>
       </div>
     );
   }
 
+  // ── Dashboard ──
+  const fields = MODAL_FIELDS[page] || [];
+  const modalTitle = editId
+    ? `Edit ${menuConfig[page]?.title || page}`
+    : `Tambah ${menuConfig[page]?.title || page}`;
+
   return (
-    <div style={styles.container}>
+    <div style={ds.container}>
+      {/* ── Modal ── */}
       {showModal && (
-        <div style={styles.modalOverlay}>
-          <div style={{...styles.loginCard, marginTop: 0}}>
-            <h3 style={{marginBottom: '20px', color: '#1e293b'}}>Tambah {page}</h3>
-            <form onSubmit={handleUpload}>
-  {menuConfig[page].fields?.map(f => (
-  f === 'foto' ? (
-    <input 
-      key={f} 
-      type="file" 
-      onChange={(e) => setFile(e.target.files[0])} 
-    />
-  ) : f === 'rating' ? (
-    <select 
-      key={f} 
-      style={styles.input} 
-      required
-      onChange={e => setFormData({...formData, rating: parseInt(e.target.value)})}
-    >
-      <option value="">PILIH RATING</option>
-      {[1, 2, 3, 4, 5].map(num => (
-        <option key={num} value={num}>{'★'.repeat(num)}</option>
-      ))}
-    </select>
-  ) : (
-    <input 
-      key={f} 
-      style={styles.input} 
-      placeholder={f.replace('_', ' ').toUpperCase()} 
-      type={f === 'kalori' || f.includes('_id') ? 'number' : 'text'}
-      required 
-      onChange={e => {
-        const val = e.target.value;
-        setFormData({
-          ...formData, 
-          [f]: (f === 'kalori' || f.includes('_id')) ? parseInt(val) : val 
-        });
-      }} 
-    />
-  )
-))}
-              <div style={{display: 'flex', gap: '10px'}}>
-                <button type="button" onClick={() => setShowModal(false)} style={{...styles.btnTambah, backgroundColor: '#94a3b8', flex: 1, boxShadow: 'none'}}>Batal</button>
-                <button type="submit" style={{...styles.btnTambah, flex: 1}}>Simpan</button>
+        <div style={ds.modalOverlay} onClick={() => setShowModal(false)}>
+          <div style={ds.modalCard} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginBottom: '20px', fontFamily: "'Sora', sans-serif", fontSize: '18px', color: '#0f172a' }}>
+              {modalTitle}
+            </h3>
+            <form onSubmit={handleSimpan}>
+              {fields.map(f => (
+                <div key={f.key}>
+                  <label className="modal-label">{f.label}</label>
+                  {f.type === 'textarea' ? (
+                    <textarea
+                      className="modal-input"
+                      placeholder={f.placeholder}
+                      value={formData[f.key] || ''}
+                      onChange={e => setFormData({ ...formData, [f.key]: e.target.value })}
+                      rows={3}
+                      style={{ resize: 'vertical', lineHeight: '1.5' }}
+                    />
+                  ) : (
+                    <input
+                      className="modal-input"
+                      type={f.type || 'text'}
+                      placeholder={f.placeholder}
+                      value={formData[f.key] || ''}
+                      onChange={e => setFormData({ ...formData, [f.key]: e.target.value })}
+                      required={f.key !== 'deskripsi'}
+                    />
+                  )}
+                </div>
+              ))}
+              <div className="modal-btn-row">
+                <button type="button" className="modal-btn-cancel" onClick={() => setShowModal(false)}>Batal</button>
+                <button type="submit" className="modal-btn-save">
+                  {editId ? '💾 Simpan Perubahan' : '+ Tambah Data'}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      <aside style={styles.sidebar}>
-        <div style={{ padding: '0 0 20px 0', textAlign: 'center' }}>
-          <h1 style={{ color: '#10b981', fontSize: '24px' }}>MBG Group</h1>
-          <p style={{ fontSize: '12px', color: '#94a3b8' }}>Halo, {user.nama} ({user.role})</p>
-          <span onClick={() => setUser(null)} style={{fontSize: '10px', cursor: 'pointer', color: '#ef4444'}}>Logout</span>
-        </div>
-        {Object.keys(menuConfig).map((key) => (
-          <div key={key} style={{...styles.navItem, backgroundColor: page === key ? '#334155' : 'transparent', color: page === key ? '#10b981' : 'white'}} onClick={() => setPage(key)}>
-            <span style={{fontSize: '20px'}}>{menuConfig[key].icon}</span>
-            {menuConfig[key].title.split(' ')[1]} {menuConfig[key].title.split(' ')[2] || ''}
+      {/* ── Sidebar ── */}
+      <div style={ds.sidebar}>
+        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#10b981', marginBottom: '40px' }}>MBG Group</div>
+        {Object.entries(menuConfig).map(([key, cfg]) => (
+          <div
+            key={key}
+            onClick={() => setPage(key)}
+            style={{ ...ds.navItem, backgroundColor: page === key ? '#10b981' : 'transparent', color: page === key ? 'white' : '#94a3b8' }}
+          >
+            {cfg.icon} {cfg.title}
           </div>
         ))}
-      </aside>
-
-      <main style={styles.main}>
-        <div style={styles.card}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-            <h2>Manajemen {menuConfig[page].title}</h2>
-            {isAllowedCRUD() && <button onClick={() => { setFormData({}); setShowModal(true); }} style={styles.btnTambah}>+ Tambah {page}</button>}
-          </div>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>No</th>
-                {menuConfig[page].headers.map(h => <th key={h} style={styles.th}>{h}</th>)}
-                {isAllowedCRUD() && <th style={styles.th}>Aksi</th>}
-              </tr>
-            </thead>
-            <tbody>
-  {data.map((item, i) => (
-    <tr key={item.id || i}>
-      <td style={styles.td}>{i + 1}</td>
-      {menuConfig[page].render(item)}
-      
-      {/* Tombol Aksi (Hapus) dengan Logika Kepemilikan */}
-      {isAllowedCRUD() && (
-        <td style={styles.td}>
-          {(user.role === 'admin' || user.id === item.user_id) ? (
-            <button 
-              onClick={() => handleDelete(item.id)} 
-              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '18px' }}
-            >
-              🗑️
-            </button>
-          ) : (
-            <span style={{color: '#cbd5e1', fontSize: '12px'}}>Dikunci</span>
-          )}
-        </td>
-      )}
-    </tr>
-  ))}
-</tbody>
-          </table>
-          {!isAllowedCRUD() && <p style={{color: '#94a3b8', fontSize: '12px', marginTop: '10px'}}>* Anda hanya memiliki akses baca (View Only) di halaman ini.</p>}
+        <div onClick={() => setUser(null)} style={{ ...ds.navItem, marginTop: 'auto', color: '#f87171' }}>
+          🚪 Keluar
         </div>
-      </main>
+      </div>
+
+      {/* ── Main Content ── */}
+      <div style={ds.main}>
+        <div style={ds.card}>
+          <h2 style={{ marginBottom: '25px', fontFamily: "'Sora', sans-serif" }}>
+            {menuConfig[page].title}
+          </h2>
+
+          {page === 'menu' ? (
+            <MenuPage
+              data={data}
+              user={user}
+              onDelete={handleDelete}
+              onTambah={() => openTambah()}
+              onEdit={openEdit}
+            />
+          ) : page === 'siswa' ? (
+            <SiswaPage
+              data={data}
+              user={user}
+              onDelete={handleDelete}
+              onTambah={() => openTambah()}
+              onEdit={openEdit}
+            />
+          ) : page === 'sekolah' ? (
+            <SekolahPage
+              data={data}
+              user={user}
+              onDelete={handleDelete}
+              onTambah={() => openTambah({ role: 'sekolah' })}
+            />
+          ) : (
+            /* Jadwal & Laporan — generic table */
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th className="siswa-th" style={{ width: '48px' }}>No</th>
+                  {menuConfig[page].headers?.map(h => <th key={h} className="siswa-th">{h}</th>)}
+                  <th className="siswa-th" style={{ width: '80px' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.length === 0 ? (
+                  <tr><td colSpan={10} className="siswa-empty">Data tidak ditemukan.</td></tr>
+                ) : data.map((it, i) => (
+                  <tr key={i} className="siswa-row">
+                    <td className="siswa-td" style={{ color: '#94a3b8' }}>{i + 1}</td>
+                    {menuConfig[page].render(it)}
+                    <td className="siswa-td">
+                      <button className="siswa-del-btn" onClick={() => handleDelete(it.id)}>🗑️</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </div>
   );
-}
+

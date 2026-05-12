@@ -103,7 +103,7 @@ const GLOBAL_CSS = `
   }
   .dash-btn:hover { transform: scale(1.04) translateY(-1px); box-shadow: 0 8px 24px rgba(16,185,129,0.4); }
 
-  /* ── Stats & Toolbar Styles ── */
+  /* ── Stats & Toolbar ── */
   .siswa-stat-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;
   }
@@ -132,7 +132,7 @@ const GLOBAL_CSS = `
     color: #334155; background: #f8fafc; outline: none; cursor: pointer;
   }
 
-  /* ── Table Styles ── */
+  /* ── Table ── */
   .siswa-table { width: 100%; border-collapse: collapse; }
   .siswa-th {
     text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
@@ -155,7 +155,7 @@ const GLOBAL_CSS = `
     background: #dcfce7; color: #166534;
   }
   .badge-school-admin { background: #fef9c3; color: #854d0e; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-school-user { background: #e0f2fe; color: #075985; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-school-user  { background: #e0f2fe; color: #075985; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 
   .siswa-del-btn {
     background: none; border: none; cursor: pointer; color: #cbd5e1;
@@ -187,6 +187,71 @@ const GLOBAL_CSS = `
   .pg-btn.active { background: #10b981; color: white; border-color: #10b981; font-weight: 600; }
   .pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .pg-dots { padding: 0 4px; color: #cbd5e1; font-size: 13px; }
+
+  /* ── Menu Card View ── */
+  .menu-card-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 8px;
+  }
+  .menu-card {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;
+    padding: 20px 18px; display: flex; flex-direction: column; gap: 10px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .menu-card:hover { box-shadow: 0 8px 24px rgba(16,185,129,0.12); transform: translateY(-2px); }
+  .menu-card-name { font-size: 14px; font-weight: 600; color: #0f172a; }
+  .menu-card-energy {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #dcfce7; color: #166534;
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    width: fit-content;
+  }
+  .menu-card-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; }
+  .menu-card-btn {
+    flex: 1; padding: 7px; border-radius: 10px; border: none; font-size: 12px;
+    font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .menu-card-btn.edit { background: #dbeafe; color: #1d4ed8; }
+  .menu-card-btn.edit:hover { background: #bfdbfe; }
+  .menu-card-btn.del  { background: #fee2e2; color: #dc2626; }
+  .menu-card-btn.del:hover  { background: #fecaca; }
+  .menu-view-toggle { display: flex; gap: 6px; }
+  .menu-toggle-btn {
+    padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 10px;
+    background: #f8fafc; color: #64748b; cursor: pointer; font-size: 13px;
+    transition: all 0.15s; font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .menu-toggle-btn.active { background: #10b981; color: white; border-color: #10b981; }
+
+  /* ── Modal Form ── */
+  .modal-label {
+    display: block; font-size: 11px; font-weight: 600; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;
+  }
+  .modal-input {
+    width: 100%; padding: 10px 12px; margin-bottom: 16px;
+    border: 1px solid #e2e8f0; border-radius: 10px; font-size: 13px;
+    font-family: 'Plus Jakarta Sans', sans-serif; color: #0f172a;
+    background: #f8fafc; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .modal-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); background: white; }
+  .modal-btn-row { display: flex; gap: 8px; margin-top: 4px; }
+  .modal-btn-cancel {
+    flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px;
+    background: #f8fafc; color: #64748b; cursor: pointer; font-size: 13px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;
+    transition: background 0.15s;
+  }
+  .modal-btn-cancel:hover { background: #f1f5f9; }
+  .modal-btn-save {
+    flex: 1; padding: 10px; border: none; border-radius: 10px;
+    background: #10b981; color: white; cursor: pointer; font-size: 13px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+    transition: background 0.15s, transform 0.15s;
+  }
+  .modal-btn-save:hover { background: #059669; transform: translateY(-1px); }
 `;
 
 // --- UTILS ---
@@ -219,7 +284,7 @@ function OrbBackground() {
     { w: 320, h: 320, top: 'auto', left: 'auto', bottom: '-80px', right: '-80px', color: 'rgba(16,185,129,0.09)', dur: '22s', delay: '-7s' },
   ];
   const FOOD_EMOJIS = [
-    { emoji: '🍱', top: '8%',   left: '5%',   dur: '14s', rotate: '-12deg' },
+    { emoji: '🍱', top: '8%',  left: '5%',  dur: '14s', rotate: '-12deg' },
     { emoji: '🥗', top: '15%', left: '88%', dur: '17s', rotate: '8deg' },
     { emoji: '🥛', top: '80%', left: '82%', dur: '16s', rotate: '-8deg' },
   ];
@@ -261,16 +326,288 @@ function CursorGlow({ cardRef }) {
     const card = cardRef.current; if (!card) return;
     card.addEventListener('mousemove', handleMouseMove);
     card.addEventListener('mouseleave', handleMouseLeave);
-    return () => { card.removeEventListener('mousemove', handleMouseMove); card.removeEventListener('mouseleave', handleMouseLeave); };
+    return () => {
+      card.removeEventListener('mousemove', handleMouseMove);
+      card.removeEventListener('mouseleave', handleMouseLeave);
+    };
   }, [handleMouseMove, handleMouseLeave]);
   return (
     <div ref={glowRef} style={{ position: 'absolute', inset: 0, borderRadius: '20px', pointerEvents: 'none', opacity: 0, transition: 'opacity 0.3s', zIndex: 0 }} />
   );
 }
 
+// --- PAGE: MENU (FULL CRUD) ---
+function MenuPage({ data, onDelete, onEdit, onTambah, user }) {
+  const [search, setSearch]           = useState('');
+  const [view, setView]               = useState('table');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [jadwalData, setJadwalData]   = useState([]);
+
+  useEffect(() => { setCurrentPage(1); }, [data, search]);
+
+  // Fetch jadwal untuk hitung top pesanan
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/jadwal')
+      .then(res => setJadwalData(res.data || []))
+      .catch(() => setJadwalData([]));
+  }, []);
+
+  // Hitung frekuensi tiap nama_menu dari jadwal
+  const topPesanan = Object.entries(
+    jadwalData.reduce((acc, j) => {
+      const name = j.nama_menu || 'Tidak diketahui';
+      acc[name] = (acc[name] || 0) + 1;
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3); // ambil top 3
+
+  const filtered = data.filter(m =>
+    !search || (m.nama_menu || '').toLowerCase().includes(search.toLowerCase())
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const pageData   = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  const startIdx   = (currentPage - 1) * PER_PAGE;
+
+  const MEDAL = ['🥇', '🥈', '🥉'];
+  const MEDAL_COLORS = [
+    { bg: '#fef9c3', color: '#854d0e', bar: '#fbbf24' },
+    { bg: '#f1f5f9', color: '#334155', bar: '#94a3b8' },
+    { bg: '#fef3c7', color: '#92400e', bar: '#d97706' },
+  ];
+  const maxCount = topPesanan[0]?.[1] || 1;
+
+  return (
+    <>
+      {/* ── Stats Row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '14px', marginBottom: '24px' }}>
+        {/* Total Menu card */}
+        <div className="siswa-stat-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="siswa-stat-label">Total Menu</div>
+          <div className="siswa-stat-val">{data.length}</div>
+          <div className="siswa-stat-sub">tersedia</div>
+        </div>
+
+        {/* Top Pesanan card */}
+        <div className="siswa-stat-card" style={{ padding: '16px 20px' }}>
+          <div className="siswa-stat-label" style={{ marginBottom: '12px' }}>🏆 Top Pesanan Terbanyak</div>
+          {topPesanan.length === 0 ? (
+            <div style={{ fontSize: '12px', color: '#cbd5e1', fontStyle: 'italic' }}>
+              Belum ada data jadwal distribusi.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {topPesanan.map(([nama, count], i) => {
+                const mc = MEDAL_COLORS[i] || MEDAL_COLORS[2];
+                const pct = Math.round((count / maxCount) * 100);
+                return (
+                  <div key={nama} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>{MEDAL[i]}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                        <span style={{
+                          fontSize: '12px', fontWeight: 600, color: '#0f172a',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          maxWidth: '65%',
+                        }}>{nama}</span>
+                        <span style={{
+                          fontSize: '11px', fontWeight: 700,
+                          background: mc.bg, color: mc.color,
+                          padding: '1px 8px', borderRadius: '20px',
+                        }}>{count}x</span>
+                      </div>
+                      {/* Progress bar */}
+                      <div style={{ height: '4px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', width: `${pct}%`,
+                          background: mc.bar, borderRadius: '4px',
+                          transition: 'width 0.6s ease',
+                        }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className="siswa-toolbar">
+        <input
+          className="siswa-search"
+          type="text"
+          placeholder="Cari nama menu..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <div className="menu-view-toggle">
+          <button
+            className={`menu-toggle-btn${view === 'table' ? ' active' : ''}`}
+            onClick={() => setView('table')}
+            title="Tampilan Tabel"
+          >☰ Tabel</button>
+          <button
+            className={`menu-toggle-btn${view === 'card' ? ' active' : ''}`}
+            onClick={() => setView('card')}
+            title="Tampilan Kartu"
+          >⊞ Kartu</button>
+        </div>
+        {user?.role === 'admin' && (
+          <button
+            className="dash-btn"
+            style={{ padding: '9px 18px', fontSize: '13px' }}
+            onClick={onTambah}
+          >
+            + Tambah Menu
+          </button>
+        )}
+      </div>
+
+      {/* Table View */}
+      {view === 'table' && (
+        <table className="siswa-table">
+          <thead>
+            <tr>
+              <th className="siswa-th" style={{ width: '48px' }}>No</th>
+              <th className="siswa-th">Nama Menu & Isi Paket</th>
+              <th className="siswa-th" style={{ width: '130px' }}>Energi (kkal)</th>
+              {user?.role === 'admin' && (
+                <th className="siswa-th" style={{ width: '100px' }}>Aksi</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {pageData.length === 0 ? (
+              <tr><td colSpan={4} className="siswa-empty">Menu tidak ditemukan.</td></tr>
+            ) : pageData.map((item, i) => {
+              const ac = avatarColor(item.id);
+              // parse deskripsi: jika ada koma/titik koma, tampilkan sebagai tags
+              const deskripsiBullets = item.deskripsi
+                ? item.deskripsi.split(/[,;]+/).map(s => s.trim()).filter(Boolean)
+                : [];
+              return (
+                <tr key={item.id || i} className="siswa-row">
+                  <td className="siswa-td" style={{ color: '#94a3b8', verticalAlign: 'top', paddingTop: '16px' }}>{startIdx + i + 1}</td>
+                  <td className="siswa-td">
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div
+                        className="siswa-avatar"
+                        style={{ background: ac.bg, color: ac.color, borderRadius: '10px', fontSize: '16px', flexShrink: 0, marginTop: '2px' }}
+                      >
+                        🍽️
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: deskripsiBullets.length ? '6px' : 0 }}>
+                          {item.nama_menu}
+                        </div>
+                        {deskripsiBullets.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                            {deskripsiBullets.map((b, bi) => (
+                              <span key={bi} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                background: '#f1f5f9', color: '#475569',
+                                fontSize: '11px', fontWeight: 500,
+                                padding: '3px 9px', borderRadius: '20px',
+                                border: '1px solid #e2e8f0',
+                              }}>
+                                <span style={{ color: '#10b981', fontSize: '10px' }}>●</span> {b}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {!item.deskripsi && (
+                          <span style={{ fontSize: '11px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                            Belum ada deskripsi isi paket
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="siswa-td" style={{ verticalAlign: 'top', paddingTop: '16px' }}>
+                    <span className="siswa-kelas-badge">{item.kalori} kkal</span>
+                  </td>
+                  {user?.role === 'admin' && (
+                    <td className="siswa-td" style={{ verticalAlign: 'top', paddingTop: '12px' }}>
+                      <button className="siswa-edit-btn" onClick={() => onEdit(item)} title="Edit">✏️</button>
+                      <button className="siswa-del-btn"  onClick={() => onDelete(item.id)} title="Hapus">🗑️</button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {/* Card View */}
+      {view === 'card' && (
+        <div className="menu-card-grid">
+          {pageData.length === 0 ? (
+            <p className="siswa-empty">Menu tidak ditemukan.</p>
+          ) : pageData.map((item) => {
+            const deskripsiBullets = item.deskripsi
+              ? item.deskripsi.split(/[,;]+/).map(s => s.trim()).filter(Boolean)
+              : [];
+            return (
+              <div key={item.id} className="menu-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '26px' }}>🍽️</div>
+                  <span className="menu-card-energy">⚡ {item.kalori} kkal</span>
+                </div>
+                <div className="menu-card-name">{item.nama_menu}</div>
+                {deskripsiBullets.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
+                    {deskripsiBullets.map((b, bi) => (
+                      <div key={bi} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#475569' }}>
+                        <span style={{ color: '#10b981', fontSize: '10px', flexShrink: 0 }}>●</span>
+                        <span>{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '11px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                    Belum ada deskripsi isi paket
+                  </div>
+                )}
+                {user?.role === 'admin' && (
+                  <div className="menu-card-actions">
+                    <button className="menu-card-btn edit" onClick={() => onEdit(item)}>✏️ Edit</button>
+                    <button className="menu-card-btn del"  onClick={() => onDelete(item.id)}>🗑️ Hapus</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="pg-wrap">
+          <span className="pg-info">
+            Menampilkan {startIdx + 1}–{Math.min(startIdx + PER_PAGE, filtered.length)} dari {filtered.length} menu
+          </span>
+          <div className="pg-btns">
+            <button className="pg-btn" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>‹</button>
+            {buildPages(currentPage, totalPages).map((p, i) =>
+              p === '...'
+                ? <span key={`d${i}`} className="pg-dots">…</span>
+                : <button key={p} className={`pg-btn${p === currentPage ? ' active' : ''}`} onClick={() => setCurrentPage(p)}>{p}</button>
+            )}
+            <button className="pg-btn" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}>›</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // --- PAGE: SISWA ---
 function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch]           = useState('');
   const [filterKelas, setFilterKelas] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -320,7 +657,7 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
           <option value="">Semua Kelas</option>
           {kelasList.map(k => <option key={k} value={k}>Kelas {k}</option>)}
         </select>
-        {(user?.role === 'admin') && (
+        {user?.role === 'admin' && (
           <button className="dash-btn" style={{ padding: '9px 18px', fontSize: '13px' }} onClick={onTambah}>
             + Tambah Siswa
           </button>
@@ -364,23 +701,40 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
           })}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div className="pg-wrap">
+          <span className="pg-info">
+            Menampilkan {startIdx + 1}–{Math.min(startIdx + PER_PAGE, filtered.length)} dari {filtered.length} siswa
+          </span>
+          <div className="pg-btns">
+            <button className="pg-btn" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>‹</button>
+            {buildPages(currentPage, totalPages).map((p, i) =>
+              p === '...'
+                ? <span key={`d${i}`} className="pg-dots">…</span>
+                : <button key={p} className={`pg-btn${p === currentPage ? ' active' : ''}`} onClick={() => setCurrentPage(p)}>{p}</button>
+            )}
+            <button className="pg-btn" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}>›</button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
-// --- PAGE: SEKOLAH (ELEGANT VERSION) ---
+// --- PAGE: SEKOLAH ---
 function SekolahPage({ data, onDelete, onTambah, user }) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch]           = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = data.filter(s => 
-    !search || (s.nama || '').toLowerCase().includes(search.toLowerCase()) || 
+  const filtered = data.filter(s =>
+    !search ||
+    (s.nama  || '').toLowerCase().includes(search.toLowerCase()) ||
     (s.email || '').toLowerCase().includes(search.toLowerCase())
   );
-
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const pageData = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
-  const startIdx = (currentPage - 1) * PER_PAGE;
+  const pageData   = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  const startIdx   = (currentPage - 1) * PER_PAGE;
 
   return (
     <>
@@ -430,7 +784,7 @@ function SekolahPage({ data, onDelete, onTambah, user }) {
           {pageData.length === 0 ? (
             <tr><td colSpan={5} className="siswa-empty">Data tidak ditemukan.</td></tr>
           ) : pageData.map((item, i) => {
-            const ac = avatarColor(item.id + 5); 
+            const ac = avatarColor(item.id + 5);
             return (
               <tr key={item.id || i} className="siswa-row">
                 <td className="siswa-td" style={{ color: '#94a3b8' }}>{startIdx + i + 1}</td>
@@ -460,40 +814,63 @@ function SekolahPage({ data, onDelete, onTambah, user }) {
   );
 }
 
+// --- MODAL FORM CONFIG ---
+const MODAL_FIELDS = {
+  menu: [
+    { key: 'nama_menu',  label: 'Nama Menu',     placeholder: 'Contoh: Ayam Bakar', type: 'text' },
+    { key: 'kalori',     label: 'Energi (kkal)', placeholder: 'Contoh: 400',        type: 'number' },
+    { key: 'deskripsi',  label: 'Isi Paket (pisahkan dengan koma)', placeholder: 'Contoh: Nasi putih, Ayam bakar, Tempe goreng, Sayur lodeh, Buah jeruk', type: 'textarea' },
+  ],
+  siswa: [
+    { key: 'nama_siswa', label: 'Nama Siswa', placeholder: 'Nama lengkap siswa', type: 'text' },
+    { key: 'kelas',      label: 'Kelas',      placeholder: 'Contoh: 5A',         type: 'text' },
+    { key: 'sekolah_id', label: 'ID Sekolah', placeholder: 'ID sekolah',         type: 'number' },
+  ],
+  sekolah: [
+    { key: 'nama',          label: 'Nama Sekolah', placeholder: 'Nama institusi', type: 'text' },
+    { key: 'email',         label: 'Email',        placeholder: 'email@sekolah.id', type: 'email' },
+    { key: 'password_hash', label: 'Password',     placeholder: 'Password',       type: 'password' },
+    { key: 'role',          label: 'Role',         placeholder: 'sekolah',        type: 'text' },
+  ],
+  jadwal:  [{ key: 'tanggal', label: 'Tanggal', placeholder: 'YYYY-MM-DD', type: 'date' }],
+  laporan: [
+    { key: 'komentar', label: 'Komentar', placeholder: 'Tulis komentar...', type: 'text' },
+    { key: 'rating',   label: 'Rating',   placeholder: '1–5',               type: 'number' },
+  ],
+};
+
 // --- DASHBOARD STYLES ---
 const ds = {
-  container: { display: 'flex', height: '100vh', overflow: 'hidden', backgroundColor: '#f0fdf8', fontFamily: "'Plus Jakarta Sans', sans-serif" },
-  sidebar: { width: '280px', backgroundColor: '#1e293b', color: 'white', padding: '25px', display: 'flex', flexDirection: 'column' },
-  main: { flex: 1, padding: '40px', height: '100vh', overflowY: 'auto', position: 'relative' },
-  navItem: { padding: '18px 20px', cursor: 'pointer', borderRadius: '12px', marginBottom: '10px', transition: '0.3s', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '500' },
-  card: { backgroundColor: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.06)', position: 'relative', zIndex: 1 },
-  td: { padding: '16px', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155' },
-  badge: { padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', display: 'inline-block' },
-  modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modalCard: { background: 'white', padding: '32px 28px', borderRadius: '20px', width: '380px' },
+  container:    { display: 'flex', height: '100vh', overflow: 'hidden', backgroundColor: '#f0fdf8', fontFamily: "'Plus Jakarta Sans', sans-serif" },
+  sidebar:      { width: '280px', backgroundColor: '#1e293b', color: 'white', padding: '25px', display: 'flex', flexDirection: 'column' },
+  main:         { flex: 1, padding: '40px', height: '100vh', overflowY: 'auto', position: 'relative' },
+  navItem:      { padding: '18px 20px', cursor: 'pointer', borderRadius: '12px', marginBottom: '10px', transition: '0.3s', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '500' },
+  card:         { backgroundColor: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.06)', position: 'relative', zIndex: 1 },
+  modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(2px)' },
+  modalCard:    { background: 'white', padding: '32px 28px', borderRadius: '20px', width: '460px', boxShadow: '0 24px 48px rgba(0,0,0,0.15)' },
 };
 
 // --- MAIN APP ---
 export default function App() {
+  const [user, setUser]               = useState(null);
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [isLoading, setIsLoading]     = useState(false);
+  const [page, setPage]               = useState('menu');
+  const [data, setData]               = useState([]);
+  const [showModal, setShowModal]     = useState(false);
+  const [editId, setEditId]           = useState(null);
+  const [formData, setFormData]       = useState({});
+
+  const cardRef  = useRef(null);
+  const API_URL  = 'http://localhost:5000/api';
+
+  // inject global CSS once
   useEffect(() => {
     const el = document.createElement('style');
     el.textContent = GLOBAL_CSS;
     document.head.appendChild(el);
-    return () => document.head.removeChild(el);
+    return () => { try { document.head.removeChild(el); } catch {} };
   }, []);
-
-  const [user, setUser] = useState(null);
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState('menu');
-  const [data, setData] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({});
-  const [file, setFile] = useState(null);
-  
-  const cardRef = useRef(null);
-  const API_URL = 'http://localhost:5000/api';
 
   const fetchData = async () => {
     try {
@@ -504,17 +881,40 @@ export default function App() {
 
   useEffect(() => { if (user) fetchData(); }, [page, user]);
 
+  // ── CRUD handlers ──
   const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus data?')) return;
-    try { await axios.delete(`${API_URL}/${page}/${id}`); fetchData(); } catch { alert('Gagal Hapus'); }
+    if (!window.confirm('Yakin ingin menghapus data ini?')) return;
+    try {
+      await axios.delete(`${API_URL}/${page}/${id}`);
+      fetchData();
+    } catch { alert('Gagal menghapus data.'); }
   };
 
   const handleSimpan = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/${page}`, formData);
-      setShowModal(false); setFormData({}); fetchData();
-    } catch (err) { alert('Gagal Simpan'); }
+      if (editId) {
+        await axios.put(`${API_URL}/${page}/${editId}`, formData);
+      } else {
+        await axios.post(`${API_URL}/${page}`, formData);
+      }
+      setShowModal(false);
+      setFormData({});
+      setEditId(null);
+      fetchData();
+    } catch { alert('Gagal menyimpan data.'); }
+  };
+
+  const openTambah = (defaultData = {}) => {
+    setEditId(null);
+    setFormData(defaultData);
+    setShowModal(true);
+  };
+
+  const openEdit = (item) => {
+    setEditId(item.id);
+    setFormData({ ...item });
+    setShowModal(true);
   };
 
   const handleLogin = async (e) => {
@@ -526,18 +926,25 @@ export default function App() {
         setUser(res.data);
         setPage(res.data.role === 'sekolah' ? 'siswa' : 'menu');
       }
-    } catch { alert('Email/Password Salah!'); }
+    } catch { alert('Email atau Password salah!'); }
     finally { setIsLoading(false); }
   };
 
   const menuConfig = {
-    menu: { title: 'Daftar Menu Makanan', icon: '🍱', headers: ['Menu', 'Energi'], fields: ['nama_menu', 'kalori'], render: (it) => <><td style={ds.td}><strong>{it.nama_menu}</strong></td><td style={ds.td}>{it.kalori} kkal</td></> },
-    siswa: { title: 'Manajemen Data Siswa', icon: '👥' },
-    sekolah: { title: 'Manajemen Data Sekolah', icon: '🏫', fields: ['nama', 'email', 'password', 'role'] },
-    jadwal: { title: 'Jadwal Distribusi MBG', icon: '🚚', headers: ['Tanggal', 'Sekolah', 'Menu'], render: (it) => <><td style={ds.td}>{it.tanggal}</td><td style={ds.td}>{it.nama_sekolah}</td><td style={ds.td}>{it.nama_menu}</td></> },
-    laporan: { title: 'Feedback & Laporan', icon: '📊', headers: ['Sekolah', 'Komentar', 'Rating'], fields: ['komentar', 'rating', 'foto'], render: (it) => <><td style={ds.td}>{it.nama_sekolah}</td><td style={ds.td}>{it.komentar}</td><td style={ds.td}>{it.rating} ★</td></> },
+    menu:    { title: 'Daftar Menu Makanan',    icon: '🍱' },
+    siswa:   { title: 'Manajemen Data Siswa',   icon: '👥' },
+    sekolah: { title: 'Manajemen Data Sekolah', icon: '🏫' },
+    jadwal:  { title: 'Jadwal Distribusi MBG',  icon: '🚚',
+      headers: ['Tanggal', 'Sekolah', 'Menu'],
+      render: (it) => <><td style={{ padding: '16px', fontSize: '14px' }}>{it.tanggal}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.nama_sekolah}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.nama_menu}</td></>,
+    },
+    laporan: { title: 'Feedback & Laporan',     icon: '📊',
+      headers: ['Sekolah', 'Komentar', 'Rating'],
+      render: (it) => <><td style={{ padding: '16px', fontSize: '14px' }}>{it.nama_sekolah}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.komentar}</td><td style={{ padding: '16px', fontSize: '14px' }}>{it.rating} ★</td></>,
+    },
   };
 
+  // ── Login Screen ──
   if (!user) {
     return (
       <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0a1628', color: 'white', fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'relative', overflow: 'hidden' }}>
@@ -553,63 +960,133 @@ export default function App() {
           <form onSubmit={handleLogin}>
             <input className="mbg-input-field" type="email" placeholder="Email" required onChange={e => setCredentials({ ...credentials, email: e.target.value })} />
             <input className="mbg-input-field" type="password" placeholder="Password" required onChange={e => setCredentials({ ...credentials, password: e.target.value })} />
-            <button type="submit" className="mbg-btn-login" disabled={isLoading}>{isLoading ? 'Loading...' : 'Masuk'}</button>
+            <button type="submit" className="mbg-btn-login" disabled={isLoading}>
+              {isLoading ? <><div className="mbg-spinner" /> Memuat...</> : 'Masuk'}
+            </button>
           </form>
         </div>
       </div>
     );
   }
 
+  // ── Dashboard ──
+  const fields = MODAL_FIELDS[page] || [];
+  const modalTitle = editId
+    ? `Edit ${menuConfig[page]?.title || page}`
+    : `Tambah ${menuConfig[page]?.title || page}`;
+
   return (
     <div style={ds.container}>
+      {/* ── Modal ── */}
       {showModal && (
-        <div style={ds.modalOverlay}>
-          <div style={ds.modalCard}>
-            <h3 style={{ marginBottom: '20px' }}>Tambah Data {page}</h3>
+        <div style={ds.modalOverlay} onClick={() => setShowModal(false)}>
+          <div style={ds.modalCard} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginBottom: '20px', fontFamily: "'Sora', sans-serif", fontSize: '18px', color: '#0f172a' }}>
+              {modalTitle}
+            </h3>
             <form onSubmit={handleSimpan}>
-              {menuConfig[page].fields?.map(f => (
-                <input key={f} style={{ width: '100%', padding: '10px', marginBottom: '10px' }} placeholder={f} onChange={e => setFormData({ ...formData, [f]: e.target.value })} />
+              {fields.map(f => (
+                <div key={f.key}>
+                  <label className="modal-label">{f.label}</label>
+                  {f.type === 'textarea' ? (
+                    <textarea
+                      className="modal-input"
+                      placeholder={f.placeholder}
+                      value={formData[f.key] || ''}
+                      onChange={e => setFormData({ ...formData, [f.key]: e.target.value })}
+                      rows={3}
+                      style={{ resize: 'vertical', lineHeight: '1.5' }}
+                    />
+                  ) : (
+                    <input
+                      className="modal-input"
+                      type={f.type || 'text'}
+                      placeholder={f.placeholder}
+                      value={formData[f.key] || ''}
+                      onChange={e => setFormData({ ...formData, [f.key]: e.target.value })}
+                      required={f.key !== 'deskripsi'}
+                    />
+                  )}
+                </div>
               ))}
-              <button className="dash-btn" type="submit" style={{ width: '100%' }}>Simpan</button>
-              <button type="button" onClick={() => setShowModal(false)} style={{ width: '100%', marginTop: '5px', background: 'none', border: 'none' }}>Batal</button>
+              <div className="modal-btn-row">
+                <button type="button" className="modal-btn-cancel" onClick={() => setShowModal(false)}>Batal</button>
+                <button type="submit" className="modal-btn-save">
+                  {editId ? '💾 Simpan Perubahan' : '+ Tambah Data'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
+      {/* ── Sidebar ── */}
       <div style={ds.sidebar}>
         <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#10b981', marginBottom: '40px' }}>MBG Group</div>
         {Object.entries(menuConfig).map(([key, cfg]) => (
-          <div key={key} onClick={() => setPage(key)} style={{ ...ds.navItem, backgroundColor: page === key ? '#10b981' : 'transparent', color: page === key ? 'white' : '#94a3b8' }}>
+          <div
+            key={key}
+            onClick={() => setPage(key)}
+            style={{ ...ds.navItem, backgroundColor: page === key ? '#10b981' : 'transparent', color: page === key ? 'white' : '#94a3b8' }}
+          >
             {cfg.icon} {cfg.title}
           </div>
         ))}
-        <div onClick={() => setUser(null)} style={{ ...ds.navItem, marginTop: 'auto', color: '#f87171' }}>🚪 Keluar</div>
+        <div onClick={() => setUser(null)} style={{ ...ds.navItem, marginTop: 'auto', color: '#f87171' }}>
+          🚪 Keluar
+        </div>
       </div>
 
+      {/* ── Main Content ── */}
       <div style={ds.main}>
         <div style={ds.card}>
-          <h2 style={{ marginBottom: '25px', fontFamily: "'Sora', sans-serif" }}>{menuConfig[page].title}</h2>
-          
-          {page === 'siswa' ? (
-            <SiswaPage data={data} user={user} onDelete={handleDelete} onTambah={() => setShowModal(true)} onEdit={(it) => { setEditId(it.id); setFormData(it); setShowModal(true); }} />
+          <h2 style={{ marginBottom: '25px', fontFamily: "'Sora', sans-serif" }}>
+            {menuConfig[page].title}
+          </h2>
+
+          {page === 'menu' ? (
+            <MenuPage
+              data={data}
+              user={user}
+              onDelete={handleDelete}
+              onTambah={() => openTambah()}
+              onEdit={openEdit}
+            />
+          ) : page === 'siswa' ? (
+            <SiswaPage
+              data={data}
+              user={user}
+              onDelete={handleDelete}
+              onTambah={() => openTambah()}
+              onEdit={openEdit}
+            />
           ) : page === 'sekolah' ? (
-            <SekolahPage data={data} user={user} onDelete={handleDelete} onTambah={() => { setFormData({role: 'sekolah'}); setShowModal(true); }} />
+            <SekolahPage
+              data={data}
+              user={user}
+              onDelete={handleDelete}
+              onTambah={() => openTambah({ role: 'sekolah' })}
+            />
           ) : (
+            /* Jadwal & Laporan — generic table */
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th style={{ ...ds.td, fontWeight: 'bold' }}>No</th>
-                  {menuConfig[page].headers?.map(h => <th key={h} style={{ ...ds.td, fontWeight: 'bold' }}>{h}</th>)}
-                  <th style={{ ...ds.td, fontWeight: 'bold' }}>Aksi</th>
+                  <th className="siswa-th" style={{ width: '48px' }}>No</th>
+                  {menuConfig[page].headers?.map(h => <th key={h} className="siswa-th">{h}</th>)}
+                  <th className="siswa-th" style={{ width: '80px' }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {data.map((it, i) => (
-                  <tr key={i}>
-                    <td style={ds.td}>{i + 1}</td>
+                {data.length === 0 ? (
+                  <tr><td colSpan={10} className="siswa-empty">Data tidak ditemukan.</td></tr>
+                ) : data.map((it, i) => (
+                  <tr key={i} className="siswa-row">
+                    <td className="siswa-td" style={{ color: '#94a3b8' }}>{i + 1}</td>
                     {menuConfig[page].render(it)}
-                    <td style={ds.td}><button onClick={() => handleDelete(it.id)}>🗑️</button></td>
+                    <td className="siswa-td">
+                      <button className="siswa-del-btn" onClick={() => handleDelete(it.id)}>🗑️</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

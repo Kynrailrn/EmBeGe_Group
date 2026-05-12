@@ -17,6 +17,43 @@ const styles = {
   badge: { padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', display: 'inline-block' },
   btnTambah: { padding: '12px 24px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' },
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  // Tambahkan ini di dalam objek styles lo yang sudah ada
+  commentBox: {
+    fontStyle: 'italic',
+    color: '#475569',
+    backgroundColor: '#f8fafc',
+    padding: '10px 15px',
+    borderRadius: '10px',
+    borderLeft: '4px solid #10b981',
+    display: 'inline-block',
+    fontSize: '13px',
+    lineHeight: '1.5'
+  },
+  schoolTag: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    color: '#1e293b',
+    fontWeight: '700'
+  },
+  ratingWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px'
+  },
+  linkBukti: {
+    color: '#2563eb',
+    textDecoration: 'none',
+    fontWeight: '600',
+    fontSize: '13px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+    padding: '6px 12px',
+    backgroundColor: '#eff6ff',
+    borderRadius: '8px',
+    transition: '0.3s'
+  }
 };
 
 export default function App() {
@@ -28,7 +65,7 @@ export default function App() {
   const [formData, setFormData] = useState({});
   const [file, setFile] = useState(null);
 
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = 'http://localhost:5173/api';
 
   const fetchData = async () => {
     try {
@@ -145,28 +182,74 @@ export default function App() {
       )
     },
     laporan: { 
-  title: 'Laporan Feedback', icon: '📊', 
+  title: 'Laporan Feedback', 
+  icon: '📊', 
   headers: ['Sekolah', 'Komentar', 'Rating', 'Bukti'], 
   canCRUD: true, 
   fields: ['komentar', 'rating', 'foto'], 
-  render: (item) => (
-    <>
-      {/* Jika Admin, tampilkan Nama Sekolah. Jika bukan, tampilkan ID */}
-      <td style={styles.td}><strong>{item.nama_sekolah}</strong></td> 
-    <td style={styles.td}><em>"{item.komentar}"</em></td>
-    {/* Tampilkan bintang sesuai angka, max 5 bintang */}
-    <td style={styles.td}>
-      {[...Array(5)].map((_, i) => (
-        <span key={i} style={{ color: i < item.rating ? '#fbbf24' : '#e2e8f0' }}>★</span>
-      ))}
-    </td>
-    <td style={styles.td}>
-      {item.foto_bukti_url ? (
-        <a href={`http://localhost:5000/${item.foto_bukti_url}`} target="_blank" rel="noreferrer">Lihat Bukti</a>
-      ) : '-'}
-    </td>
-  </>
-)
+  render: (item) => {
+    const getStatusColor = (rating) => {
+      if (rating <= 2) return { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' };
+      if (rating === 3) return { bg: '#fffbeb', border: '#f59e0b', text: '#854d0e' };
+      return { bg: '#f0fdf4', border: '#10b981', text: '#166534' };
+    };
+
+    const colors = getStatusColor(item.rating);
+
+    return (
+      <>
+        {/* 1. Kolom Sekolah/Pengirim (LOGIKA ICON DI SINI) */}
+        <td style={styles.td}>
+          <div style={styles.schoolTag}>
+            {/* Jika yang ngirim punya role admin (ID biasanya 1 atau cek nama), kasih icon beda */}
+            <span style={{fontSize: '18px'}}>
+              {item.user_id === 1 ? '🛡️' : '🏫'} 
+            </span>
+            <div style={{display: 'flex', flexDirection: 'column'}}>
+              <span>{item.nama_sekolah || `ID: ${item.user_id}`}</span>
+              {item.user_id === 1 && (
+                <small style={{color: '#6366f1', fontSize: '10px'}}>OFFICIAL ADMIN</small>
+              )}
+            </div>
+          </div>
+        </td> 
+
+        {/* 2. Kolom Komentar */}
+        <td style={styles.td}>
+          <div style={{
+            ...styles.commentBox,
+            backgroundColor: colors.bg,
+            borderLeftColor: colors.border,
+            color: colors.text
+          }}>
+            "{item.komentar}"
+          </div>
+        </td>
+
+        {/* ... sisa kolom Rating dan Bukti tetap sama seperti sebelumnya ... */}
+        <td style={styles.td}>
+          <div style={styles.ratingWrapper}>
+            <div>
+              {[...Array(5)].map((_, i) => (
+                <span key={i} style={{ color: i < item.rating ? colors.border : '#e2e8f0', fontSize: '18px' }}>★</span>
+              ))}
+            </div>
+            <small style={{ color: '#94a3b8', fontWeight: '500' }}>Skor: {item.rating}/5</small>
+          </div>
+        </td>
+
+        <td style={styles.td}>
+          {item.foto_bukti_url ? (
+            <a href={`http://localhost:5173/${item.foto_bukti_url}`} target="_blank" rel="noreferrer" style={styles.linkBukti}>
+              🖼️ Lihat Bukti
+            </a>
+          ) : (
+            <span style={{ color: '#cbd5e1', fontSize: '13px' }}>🚫 Tanpa Foto</span>
+          )}
+        </td>
+      </>
+    );
+  }
 }
   };
 

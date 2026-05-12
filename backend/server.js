@@ -103,5 +103,5 @@ app.post('/api/login', async (req, res) => {
 
 // --- 4. START SERVER ---
 db.getConnection().then(() => console.log('✅ Database Terhubung!'));
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5173;
 app.listen(PORT, () => console.log(`🚀 Backend jalan di port ${PORT}`));

@@ -134,10 +134,21 @@ const GLOBAL_CSS = `
 
   .siswa-table { width: 100%; border-collapse: collapse; }
   .siswa-th {
-    text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
-    color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em;
+    text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 700;
+    color: #475569; text-transform: uppercase; letter-spacing: 0.06em;
     border-bottom: 2px solid #f1f5f9;
   }
+  .siswa-th-sort {
+    text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 700;
+    color: #475569; text-transform: uppercase; letter-spacing: 0.06em;
+    border-bottom: 2px solid #f1f5f9;
+    cursor: pointer; user-select: none;
+    transition: color 0.15s, background 0.15s;
+  }
+  .siswa-th-sort:hover { color: #10b981; background: rgba(16,185,129,0.05); }
+  .siswa-th-sort.active { color: #10b981; }
+  .sort-icon { margin-left: 5px; font-style: normal; opacity: 0.5; font-size: 10px; }
+  .siswa-th-sort.active .sort-icon { opacity: 1; }
   .siswa-td { padding: 13px 14px; border-bottom: 1px solid #f8fafc; font-size: 13px; color: #334155; vertical-align: middle; }
   .siswa-row:hover td { background: #f8fafc; }
   .siswa-row:last-child td { border-bottom: none; }
@@ -201,12 +212,12 @@ const ORBS = [
 ];
 
 const FOOD_EMOJIS = [
-  { emoji: '🍱', top: '8%',   left: '5%',   dur: '14s', delay: '0s',   rotate: '-12deg' },
+  { emoji: '🍱', top: '8%',  left: '5%',  dur: '14s', delay: '0s',   rotate: '-12deg' },
   { emoji: '🥗', top: '15%', left: '88%', dur: '17s', delay: '-3s',  rotate: '8deg'   },
-  { emoji: '🍚', top: '72%', left: '6%',   dur: '19s', delay: '-6s',  rotate: '15deg'  },
+  { emoji: '🍚', top: '72%', left: '6%',  dur: '19s', delay: '-6s',  rotate: '15deg'  },
   { emoji: '🥛', top: '80%', left: '82%', dur: '16s', delay: '-9s',  rotate: '-8deg'  },
   { emoji: '🍗', top: '45%', left: '92%', dur: '20s', delay: '-2s',  rotate: '20deg'  },
-  { emoji: '🥦', top: '55%', left: '2%',   dur: '13s', delay: '-5s',  rotate: '-18deg' },
+  { emoji: '🥦', top: '55%', left: '2%',  dur: '13s', delay: '-5s',  rotate: '-18deg' },
   { emoji: '🍌', top: '30%', left: '94%', dur: '18s', delay: '-11s', rotate: '5deg'   },
   { emoji: '🥕', top: '88%', left: '45%', dur: '22s', delay: '-7s',  rotate: '-10deg' },
   { emoji: '🍎', top: '5%',  left: '50%', dur: '15s', delay: '-4s',  rotate: '12deg'  },
@@ -261,6 +272,7 @@ function CursorGlow({ cardRef }) {
   );
 }
 
+/* ── Avatar color helper ── */
 const AVATAR_COLORS = [
   { bg: '#E6F1FB', color: '#0C447C' }, { bg: '#E1F5EE', color: '#085041' },
   { bg: '#EEEDFE', color: '#3C3489' }, { bg: '#FAEEDA', color: '#633806' },
@@ -272,6 +284,7 @@ function getInitials(name) {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
+/* ── Pagination helper ── */
 function buildPages(current, total) {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages = [1];
@@ -282,13 +295,32 @@ function buildPages(current, total) {
   return pages;
 }
 
+/* ── Siswa Page Component ── */
 const PER_PAGE = 10;
 
 function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
   const [search, setSearch] = useState('');
   const [filterKelas, setFilterKelas] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortKey, setSortKey] = useState('nama_siswa');  // kolom aktif
+  const [sortDir, setSortDir] = useState('asc');          // 'asc' | 'desc'
 
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+    setCurrentPage(1);
+  };
+
+  const sortIcon = (key) => {
+    if (sortKey !== key) return <em className="sort-icon">⇅</em>;
+    return <em className="sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</em>;
+  };
+
+  // reset page kalau data atau filter berubah
   useEffect(() => { setCurrentPage(1); }, [data, search, filterKelas]);
 
   const kelasList = [...new Set(data.map(d => d.kelas).filter(Boolean))].sort();
@@ -300,12 +332,23 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
     return matchSearch && matchKelas;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const pageData   = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  const sorted = [...filtered].sort((a, b) => {
+    const aVal = a[sortKey] ?? '';
+    const bVal = b[sortKey] ?? '';
+    // angka vs string
+    const aNum = Number(aVal); const bNum = Number(bVal);
+    const isNum = !isNaN(aNum) && !isNaN(bNum);
+    let cmp = isNum ? aNum - bNum : String(aVal).localeCompare(String(bVal), 'id');
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE));
+  const pageData   = sorted.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
   const startIdx   = (currentPage - 1) * PER_PAGE;
 
   return (
     <>
+      {/* ── Stat Cards ── */}
       <div className="siswa-stat-grid">
         <div className="siswa-stat-card">
           <div className="siswa-stat-label">Total Siswa</div>
@@ -329,6 +372,7 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
         </div>
       </div>
 
+      {/* ── Toolbar ── */}
       <div className="siswa-toolbar">
         <input
           className="siswa-search"
@@ -348,14 +392,21 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
         )}
       </div>
 
+      {/* ── Table ── */}
       <table className="siswa-table">
         <thead>
           <tr>
             <th className="siswa-th" style={{ width: '48px' }}>No</th>
-            <th className="siswa-th">Nama Siswa</th>
-            <th className="siswa-th">Kelas</th>
-            <th className="siswa-th">ID Sekolah</th>
-            {user?.role === 'admin' && <th className="siswa-th" style={{ width: '90px' }}>Aksi</th>}
+            <th className={`siswa-th-sort${sortKey === 'nama_siswa' ? ' active' : ''}`} onClick={() => handleSort('nama_siswa')}>
+              Nama Siswa {sortIcon('nama_siswa')}
+            </th>
+            <th className={`siswa-th-sort${sortKey === 'kelas' ? ' active' : ''}`} onClick={() => handleSort('kelas')} style={{ textAlign: 'center' }}>
+              Kelas {sortIcon('kelas')}
+            </th>
+            <th className={`siswa-th-sort${sortKey === 'sekolah_id' ? ' active' : ''}`} onClick={() => handleSort('sekolah_id')} style={{ textAlign: 'center' }}>
+              ID Sekolah {sortIcon('sekolah_id')}
+            </th>
+            {user?.role === 'admin' && <th className="siswa-th" style={{ width: '90px', textAlign: 'center' }}>Aksi</th>}
           </tr>
         </thead>
         <tbody>
@@ -376,16 +427,16 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
                     <span style={{ fontWeight: 500 }}>{item.nama_siswa}</span>
                   </div>
                 </td>
-                <td className="siswa-td">
+                <td className="siswa-td" style={{ textAlign: 'center' }}>
                   <span className="siswa-kelas-badge">Kelas {item.kelas}</span>
                 </td>
-                <td className="siswa-td">
+                <td className="siswa-td" style={{ textAlign: 'center' }}>
                   <code style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px', fontSize: '12px' }}>
                     {item.sekolah_id}
                   </code>
                 </td>
                 {user?.role === 'admin' && (
-                  <td className="siswa-td" style={{ whiteSpace: 'nowrap' }}>
+                  <td className="siswa-td" style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
                     <button className="siswa-edit-btn" title="Edit" onClick={() => onEdit(item)}>✏️</button>
                     <button className="siswa-del-btn" title="Hapus" onClick={() => onDelete(item.id)}>🗑️</button>
                   </td>
@@ -396,10 +447,11 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
         </tbody>
       </table>
 
-      {filtered.length > 0 && (
+      {/* ── Pagination ── */}
+      {sorted.length > 0 && (
         <div className="pg-wrap">
           <span className="pg-info">
-            Menampilkan {Math.min(startIdx + 1, filtered.length)}–{Math.min(startIdx + PER_PAGE, filtered.length)} dari {filtered.length} siswa
+            Menampilkan {Math.min(startIdx + 1, sorted.length)}–{Math.min(startIdx + PER_PAGE, sorted.length)} dari {sorted.length} siswa
           </span>
           <div className="pg-btns">
             <button className="pg-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>←</button>
@@ -416,55 +468,12 @@ function SiswaPage({ data, onDelete, onEdit, onTambah, user }) {
   );
 }
 
-// --- DASHBOARD STYLES FIXED ---
 const ds = {
-  container: { 
-    display: 'flex', 
-    height: '100vh', 
-    overflow: 'hidden', 
-    backgroundColor: '#f0fdf8', 
-    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" 
-  },
-  sidebar: { 
-    width: '280px', 
-    backgroundColor: '#1e293b', 
-    color: 'white', 
-    padding: '25px', 
-    boxShadow: '4px 0 10px rgba(0,0,0,0.05)', 
-    flexShrink: 0,
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto'
-  },
-  main: { 
-    flex: 1, 
-    padding: '40px', 
-    height: '100vh', 
-    overflowY: 'auto', 
-    position: 'relative' 
-  },
-  navItem: { 
-    padding: '18px 20px', 
-    cursor: 'pointer', 
-    borderRadius: '12px', 
-    marginBottom: '10px', 
-    transition: '0.3s', 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '12px', 
-    fontWeight: '500',
-    fontFamily: "'Plus Jakarta Sans', sans-serif"
-  },
-  card: { 
-    backgroundColor: 'white', 
-    padding: '30px', 
-    borderRadius: '20px', 
-    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.06)', 
-    position: 'relative', 
-    zIndex: 1,
-    marginBottom: '40px' 
-  },
+  container: { display: 'flex', minHeight: '100vh', backgroundColor: '#f0fdf8', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" },
+  sidebar: { width: '280px', backgroundColor: '#1e293b', color: 'white', padding: '25px', boxShadow: '4px 0 10px rgba(0,0,0,0.05)', flexShrink: 0 },
+  navItem: { padding: '18px 20px', cursor: 'pointer', borderRadius: '12px', marginBottom: '10px', transition: '0.3s', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '500' },
+  main: { flex: 1, padding: '40px', overflowY: 'auto', position: 'relative' },
+  card: { backgroundColor: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.06)', position: 'relative', zIndex: 1 },
   table: { width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px', marginTop: '20px' },
   th: { textAlign: 'left', padding: '16px', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #f1f5f9' },
   td: { padding: '16px', backgroundColor: '#fff', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155' },
@@ -483,7 +492,7 @@ export default function App() {
   const [page, setPage]               = useState('menu');
   const [data, setData]               = useState([]);
   const [showModal, setShowModal]     = useState(false);
-  const [editId, setEditId]           = useState(null);
+  const [editId, setEditId]           = useState(null);   // null = mode tambah, ada id = mode edit
   const [formData, setFormData]       = useState({});
   const [file, setFile]               = useState(null);
   const [listMenu, setListMenu]       = useState([]);
@@ -575,7 +584,7 @@ export default function App() {
       title: 'Data Daftar Siswa', icon: '👥',
       headers: [], canCRUD: true,
       fields: ['nama_siswa', 'kelas', 'sekolah_id'],
-      render: () => null,
+      render: () => null, // handled by SiswaPage component
     },
     sekolah: {
       title: 'Data Daftar Sekolah', icon: '🏫',
@@ -612,6 +621,7 @@ export default function App() {
 
   const isAllowedCRUD = () => user?.role === 'admin' || menuConfig[page].canCRUD;
 
+  /* ── LOGIN ── */
   if (!user) {
     return (
       <div style={{
@@ -634,7 +644,7 @@ export default function App() {
           MBG Project
         </h1>
         <p className="mbg-hero-sub" style={{ fontSize: '0.75rem', color: 'rgba(148,163,184,0.65)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, marginBottom: '32px', zIndex: 1 }}>
-          Makan Bergizi Gratis — Sistem Manajemen
+          Makan Bergizi Gratis &mdash; Sistem Manajemen
         </p>
 
         <div ref={cardRef} className="mbg-card" style={{ position: 'relative', background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.11)', padding: '34px 30px 28px', borderRadius: '24px', width: '100%', maxWidth: '390px', boxShadow: '0 24px 64px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)', zIndex: 1 }}>
@@ -664,8 +674,11 @@ export default function App() {
     );
   }
 
+  /* ── DASHBOARD ── */
   return (
     <div style={ds.container}>
+
+      {/* Modal */}
       {showModal && (
         <div style={ds.modalOverlay}>
           <div style={ds.modalCard}>
@@ -708,6 +721,7 @@ export default function App() {
         </div>
       )}
 
+      {/* Sidebar */}
       <aside style={ds.sidebar}>
         <div style={{ padding: '0 0 20px 0', textAlign: 'center' }}>
           <h1 style={{ color: '#10b981', fontSize: '24px', fontFamily: "'Sora', sans-serif" }}>MBG Group</h1>
@@ -725,11 +739,21 @@ export default function App() {
         ))}
       </aside>
 
+      {/* Main */}
       <main style={ds.main}>
+
+        {/* Layer 1: mesh grid (D) */}
         <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, backgroundImage:"linear-gradient(rgba(16,185,129,0.055) 1px,transparent 1px),linear-gradient(90deg,rgba(16,185,129,0.055) 1px,transparent 1px)", backgroundSize:"36px 36px" }} />
+        {/* Layer 2: dot grid (A) */}
         <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, backgroundImage:"radial-gradient(circle,rgba(16,185,129,0.2) 1px,transparent 1px)", backgroundSize:"36px 36px", backgroundPosition:"18px 18px" }} />
+        {/* Layer 3: corner orbs (C) */}
+        <div style={{ position:"fixed", top:"-60px", right:"-60px", width:"380px", height:"380px", borderRadius:"50%", background:"radial-gradient(circle,rgba(16,185,129,0.14) 0%,transparent 65%)", pointerEvents:"none", zIndex:0 }} />
+        <div style={{ position:"fixed", bottom:"-60px", left:"260px", width:"300px", height:"300px", borderRadius:"50%", background:"radial-gradient(circle,rgba(16,185,129,0.09) 0%,transparent 65%)", pointerEvents:"none", zIndex:0 }} />
+        <div style={{ position:"fixed", top:"42%", right:"22%", width:"180px", height:"180px", borderRadius:"50%", background:"radial-gradient(circle,rgba(16,185,129,0.07) 0%,transparent 65%)", pointerEvents:"none", zIndex:0 }} />
 
         <div style={ds.card}>
+
+          {/* ── Halaman Siswa pakai komponen khusus ── */}
           {page === 'siswa' ? (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -748,6 +772,7 @@ export default function App() {
               />
             </>
           ) : (
+            /* ── Halaman lain pakai tabel biasa ── */
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <h2 style={{ fontFamily: "'Sora', sans-serif" }}>Manajemen {menuConfig[page].title}</h2>
@@ -786,6 +811,7 @@ export default function App() {
               {!isAllowedCRUD() && <p style={{ color: '#94a3b8', fontSize: '12px', marginTop: '10px' }}>* Anda hanya memiliki akses baca (View Only) di halaman ini.</p>}
             </>
           )}
+
         </div>
       </main>
     </div>

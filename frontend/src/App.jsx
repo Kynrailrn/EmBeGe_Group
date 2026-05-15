@@ -362,7 +362,8 @@ function MenuPage({ data, onDelete, onEdit, onTambah, user }) {
   useEffect(() => { setCurrentPage(1); }, [data, search]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/jadwal')
+    // --- DIPERBARUI: API_URL biar nyambung ke port 5173 ---
+    axios.get('http://localhost:5173/api/jadwal')
       .then(res => setJadwalData(res.data || []))
       .catch(() => setJadwalData([]));
   }, []);
@@ -592,7 +593,7 @@ function MenuPage({ data, onDelete, onEdit, onTambah, user }) {
       {totalPages > 1 && (
         <div className="pg-wrap">
           <span className="pg-info">
-            Menampilkan {startIdx + 1}–{Math.min(startIdx + PER_PAGE, filtered.length)} dari {filtered.length} menu
+            Menampilkan {startIdx + 1}–{Math.min(startIdx + PER_PAGE, filtered.length)} from {filtered.length} menu
           </span>
           <div className="pg-btns">
             <button className="pg-btn" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>‹</button>
@@ -818,6 +819,125 @@ function SekolahPage({ data, onDelete, onTambah, user }) {
   );
 }
 
+// --- PAGE: LAPORAN (KOMPONEN BARU SESUAI INSTRUKSI DOSEN) ---
+function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
+  const getStatusColor = (rating) => {
+    if (rating <= 2) return { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' };
+    if (rating === 3) return { bg: '#fffbeb', border: '#f59e0b', text: '#854d0e' };
+    return { bg: '#f0fdf4', border: '#10b981', text: '#166534' };
+  };
+
+  return (
+    <>
+      <div className="siswa-stat-grid" style={{ marginBottom: '20px' }}>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Total Ulasan</div>
+          <div className="siswa-stat-val">{data.length}</div>
+          <div className="siswa-stat-sub">masuk ke sistem</div>
+        </div>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Rata-rata Rating</div>
+          <div className="siswa-stat-val">
+            {data.length > 0 
+              ? (data.reduce((acc, curr) => acc + (curr.rating || 0), 0) / data.length).toFixed(1) 
+              : '0.0'}
+            <span style={{ fontSize: '16px', color: '#f59e0b', marginLeft: '4px' }}>★</span>
+          </div>
+          <div className="siswa-stat-sub">dari 5 bintang</div>
+        </div>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Ulasan Positif</div>
+          <div className="siswa-stat-val" style={{ color: '#10b981' }}>
+            {data.filter(d => (d.rating || 0) >= 4).length}
+          </div>
+          <div className="siswa-stat-sub">rating 4 & 5</div>
+        </div>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Perlu Perhatian</div>
+          <div className="siswa-stat-val" style={{ color: '#ef4444' }}>
+            {data.filter(d => (d.rating || 0) <= 2).length}
+          </div>
+          <div className="siswa-stat-sub">rating 1 & 2</div>
+        </div>
+      </div>
+
+      <div className="siswa-toolbar" style={{ justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', marginBottom: '20px' }}>
+        <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
+          Daftar rincian feedback dari masing-masing instansi.
+        </p>
+        <button className="dash-btn" style={{ padding: '9px 18px', fontSize: '13px' }} onClick={() => onTambah()}>
+          + Tambah Data
+        </button>
+      </div>
+      
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th className="siswa-th" style={{ width: '48px' }}>No</th>
+            <th className="siswa-th">Sekolah</th>
+            <th className="siswa-th">Komentar</th>
+            <th className="siswa-th">Rating</th>
+            <th className="siswa-th">Bukti</th>
+            <th className="siswa-th" style={{ width: '80px', textAlign: 'center' }}>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.length === 0 ? (
+            <tr><td colSpan={6} className="siswa-empty">Data tidak ditemukan.</td></tr>
+          ) : data.map((item, i) => {
+            const colors = getStatusColor(item.rating || 5);
+            return (
+              <tr key={item.id || i} className="siswa-row">
+                <td className="siswa-td" style={{ color: '#94a3b8' }}>{i + 1}</td>
+                
+                <td style={styles.td}>
+                  <div style={styles.schoolTag}>
+                    <span style={{fontSize: '18px'}}>{item.user_id === 1 ? '🛡️' : '🏫'}</span>
+                    <div style={{display: 'flex', flexDirection: 'column'}}>
+                      <span>{item.nama_sekolah || `ID: ${item.user_id}`}</span>
+                      {item.user_id === 1 && <small style={{color: '#6366f1', fontSize: '10px'}}>OFFICIAL ADMIN</small>}
+                    </div>
+                  </div>
+                </td> 
+                <td style={styles.td}>
+                  <div style={{ ...styles.commentBox, backgroundColor: colors.bg, borderLeftColor: colors.border, color: colors.text }}>
+                    "{item.komentar}"
+                  </div>
+                </td>
+                <td style={styles.td}>
+                  <div style={styles.ratingWrapper}>
+                    <div>{[...Array(5)].map((_, i) => (<span key={i} style={{ color: i < (item.rating||0) ? colors.border : '#e2e8f0', fontSize: '18px' }}>★</span>))}</div>
+                    <small style={{ color: '#94a3b8', fontWeight: '500' }}>Skor: {item.rating || 0}/5</small>
+                  </div>
+                </td>
+                <td style={styles.td}>
+                  {item.foto_bukti_url ? (
+                    /* --- DIPERBARUI: URL Bukti pakai port 5173 biar fotonya kebuka --- */
+                    <a href={`http://localhost:5173/${item.foto_bukti_url}`} target="_blank" rel="noreferrer" style={styles.linkBukti}>🖼️ Lihat Bukti</a>
+                  ) : (
+                    <span style={{ color: '#cbd5e1', fontSize: '13px' }}>🚫 Tanpa Foto</span>
+                  )}
+                </td>
+                
+                <td className="siswa-td" style={{ textAlign: 'center' }}>
+                  {(user?.role === 'admin' || user?.id === item.user_id) ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                      <button className="siswa-edit-btn" onClick={() => onEdit(item)} title="Edit">✏️</button>
+                      <button className="siswa-del-btn" onClick={() => onDelete(item.id)} title="Hapus">🗑️</button>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '500' }}>🔒 Terkunci</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 // --- MODAL FORM CONFIG ---
 const MODAL_FIELDS = {
   menu: [
@@ -838,8 +958,9 @@ const MODAL_FIELDS = {
   ],
   jadwal:  [{ key: 'tanggal', label: 'Tanggal', placeholder: 'YYYY-MM-DD', type: 'date' }],
   laporan: [
-    { key: 'komentar', label: 'Komentar', placeholder: 'Tulis komentar...', type: 'text' },
-    { key: 'rating',   label: 'Rating',   placeholder: '1–5',               type: 'number' },
+    { key: 'komentar', label: 'Komentar', placeholder: 'Tulis komentar...', type: 'textarea' },
+    { key: 'rating',   label: 'Rating',   type: 'rating' },
+    { key: 'foto',     label: 'Upload Bukti (Opsional)', type: 'file' },
   ],
 };
 
@@ -889,16 +1010,32 @@ export default function App() {
   const handleSimpan = async (e) => {
     e.preventDefault();
     try {
-      if (editId) {
-        await axios.put(`${API_URL}/${page}/${editId}`, formData);
-      } else {
-        await axios.post(`${API_URL}/${page}`, formData);
+      const hasFile = Object.values(formData).some(val => val instanceof File);
+      let dataToSend = formData;
+      let config = {};
+
+      if (hasFile || page === 'laporan') {
+        dataToSend = new FormData();
+        for (const key in formData) {
+          dataToSend.append(key, formData[key]);
+        }
+        dataToSend.append('user_id', user.id);
+        config = { headers: { 'Content-Type': 'multipart/form-data' } };
       }
+
+      if (editId) {
+        await axios.put(`${API_URL}/${page}/${editId}`, dataToSend, config);
+      } else {
+        await axios.post(`${API_URL}/${page}`, dataToSend, config);
+      }
+      
       setShowModal(false);
       setFormData({});
       setEditId(null);
       fetchData();
-    } catch { alert('Gagal menyimpan data.'); }
+    } catch { 
+      alert('Gagal menyimpan data.'); 
+    }
   };
 
   const openTambah = (defaultData = {}) => {
@@ -933,6 +1070,7 @@ export default function App() {
     sekolah: { title: 'Daftar Sekolah', icon: '🏫' },
     jadwal:  { 
       title: 'Distribusi MBG',  icon: '🚚',
+      canCRUD: true,
       headers: ['ID Jadwal', 'Tanggal Pengiriman', 'ID Menu / Sekolah'],
       render: (item) => (
         <>
@@ -945,48 +1083,10 @@ export default function App() {
         </>
       ),
     },
+    // Laporan sekarang dikelola penuh oleh <LaporanPage />
     laporan: { 
-      title: 'Feedback',     icon: '📊',
-      headers: ['Sekolah', 'Komentar', 'Rating', 'Bukti'],
-      render: (item) => {
-        const getStatusColor = (rating) => {
-          if (rating <= 2) return { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' };
-          if (rating === 3) return { bg: '#fffbeb', border: '#f59e0b', text: '#854d0e' };
-          return { bg: '#f0fdf4', border: '#10b981', text: '#166534' };
-        };
-        const colors = getStatusColor(item.rating || 5);
-        return (
-          <>
-            <td style={styles.td}>
-              <div style={styles.schoolTag}>
-                <span style={{fontSize: '18px'}}>{item.user_id === 1 ? '🛡️' : '🏫'}</span>
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                  <span>{item.nama_sekolah || `ID: ${item.user_id}`}</span>
-                  {item.user_id === 1 && <small style={{color: '#6366f1', fontSize: '10px'}}>OFFICIAL ADMIN</small>}
-                </div>
-              </div>
-            </td> 
-            <td style={styles.td}>
-              <div style={{ ...styles.commentBox, backgroundColor: colors.bg, borderLeftColor: colors.border, color: colors.text }}>
-                "{item.komentar}"
-              </div>
-            </td>
-            <td style={styles.td}>
-              <div style={styles.ratingWrapper}>
-                <div>{[...Array(5)].map((_, i) => (<span key={i} style={{ color: i < (item.rating||0) ? colors.border : '#e2e8f0', fontSize: '18px' }}>★</span>))}</div>
-                <small style={{ color: '#94a3b8', fontWeight: '500' }}>Skor: {item.rating || 0}/5</small>
-              </div>
-            </td>
-            <td style={styles.td}>
-              {item.foto_bukti_url ? (
-                <a href={`http://localhost:5000/${item.foto_bukti_url}`} target="_blank" rel="noreferrer" style={styles.linkBukti}>🖼️ Lihat Bukti</a>
-              ) : (
-                <span style={{ color: '#cbd5e1', fontSize: '13px' }}>🚫 Tanpa Foto</span>
-              )}
-            </td>
-          </>
-        );
-      }
+      title: 'Feedback',     
+      icon: '📊'
     },
   };
 
@@ -1043,6 +1143,26 @@ export default function App() {
                       rows={3}
                       style={{ resize: 'vertical', lineHeight: '1.5' }}
                     />
+                  ) : f.type === 'rating' ? (
+                    <div style={{ display: 'flex', gap: '8px', fontSize: '28px', cursor: 'pointer', marginBottom: '16px' }}>
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <span
+                          key={star}
+                          onClick={() => setFormData({ ...formData, [f.key]: star })}
+                          style={{ color: (formData[f.key] || 0) >= star ? '#f59e0b' : '#e2e8f0', transition: '0.2s' }}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                  ) : f.type === 'file' ? (
+                    <input
+                      className="modal-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={e => setFormData({ ...formData, [f.key]: e.target.files[0] })}
+                      style={{ padding: '8px', background: 'transparent', border: '1px dashed #cbd5e1' }}
+                    />
                   ) : (
                     <input
                       className="modal-input"
@@ -1050,7 +1170,7 @@ export default function App() {
                       placeholder={f.placeholder}
                       value={formData[f.key] || ''}
                       onChange={e => setFormData({ ...formData, [f.key]: e.target.value })}
-                      required={f.key !== 'deskripsi'}
+                      required={f.key !== 'deskripsi' && f.type !== 'file'}
                     />
                   )}
                 </div>
@@ -1097,9 +1217,18 @@ export default function App() {
       {/* ── Main Content ── */}
       <div style={ds.main}>
         <div style={ds.card}>
-          <h2 style={{ marginBottom: '25px', fontFamily: "'Sora', sans-serif" }}>
-            {menuConfig[page].title}
-          </h2>
+          <div style={{ marginBottom: '25px' }}>
+            <h2 style={{ margin: '0 0 6px 0', fontFamily: "'Sora', sans-serif", color: '#0f172a' }}>
+              {menuConfig[page].title}
+            </h2>
+            <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
+              {page === 'laporan' ? 'Pantau ulasan, rating, dan bukti foto terkait distribusi MBG dari sekolah.' :
+               page === 'jadwal' ? 'Kelola jadwal pengiriman dan riwayat distribusi makanan.' :
+               page === 'menu' ? 'Manajemen daftar menu makanan dan kandungan gizi harian.' :
+               page === 'siswa' ? 'Kelola basis data siswa penerima manfaat program MBG.' :
+               'Pengaturan hak akses admin dan informasi institusi terdaftar.'}
+            </p>
+          </div>
 
           {page === 'menu' ? (
             <MenuPage
@@ -1124,29 +1253,48 @@ export default function App() {
               onDelete={handleDelete}
               onTambah={() => openTambah({ role: 'sekolah' })}
             />
+          ) : page === 'laporan' ? (
+            <LaporanPage 
+              data={data}
+              user={user}
+              onDelete={handleDelete}
+              onTambah={() => openTambah()}
+              onEdit={openEdit}
+            />
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th className="siswa-th" style={{ width: '48px' }}>No</th>
-                  {menuConfig[page].headers?.map(h => <th key={h} className="siswa-th">{h}</th>)}
-                  <th className="siswa-th" style={{ width: '80px' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.length === 0 ? (
-                  <tr><td colSpan={10} className="siswa-empty">Data tidak ditemukan.</td></tr>
-                ) : data.map((it, i) => (
-                  <tr key={i} className="siswa-row">
-                    <td className="siswa-td" style={{ color: '#94a3b8' }}>{i + 1}</td>
-                    {menuConfig[page].render(it)}
-                    <td className="siswa-td">
-                      <button className="siswa-del-btn" onClick={() => handleDelete(it.id)}>🗑️</button>
-                    </td>
+            <>
+              {/* --- TABEL GENERIC (Sekarang cuma dipakai Jadwal) --- */}
+              {menuConfig[page].canCRUD && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                  <button className="dash-btn" style={{ padding: '9px 18px', fontSize: '13px' }} onClick={() => openTambah()}>
+                    + Tambah Data
+                  </button>
+                </div>
+              )}
+              
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th className="siswa-th" style={{ width: '48px' }}>No</th>
+                    {menuConfig[page].headers?.map(h => <th key={h} className="siswa-th">{h}</th>)}
+                    <th className="siswa-th" style={{ width: '80px' }}>Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.length === 0 ? (
+                    <tr><td colSpan={10} className="siswa-empty">Data tidak ditemukan.</td></tr>
+                  ) : data.map((it, i) => (
+                    <tr key={i} className="siswa-row">
+                      <td className="siswa-td" style={{ color: '#94a3b8' }}>{i + 1}</td>
+                      {menuConfig[page].render(it)}
+                      <td className="siswa-td">
+                        <button className="siswa-del-btn" onClick={() => handleDelete(it.id)}>🗑️</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
       </div>

@@ -48,6 +48,33 @@ app.post('/api/laporan', upload.single('foto'), async (req, res) => {
   }
 });
 
+// --- BAGIAN YANG DITAMBAHKAN UNTUK FIX EDIT LAPORAN BISA UPLOAD GAMBAR ---
+app.put('/api/laporan/:id', upload.single('foto'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, komentar } = req.body;
+    const foto = req.file ? req.file.path : null;
+
+    let sql = 'UPDATE feedbacks SET rating = ?, komentar = ?';
+    let params = [rating || 0, komentar];
+
+    // Jika user upload foto baru saat diedit, update juga fotonya
+    if (foto) {
+      sql += ', foto_bukti_url = ?';
+      params.push(foto);
+    }
+
+    sql += ' WHERE id = ?';
+    params.push(id);
+
+    await db.query(sql, params);
+    res.json({ message: "Berhasil update laporan!" });
+  } catch (err) {
+    res.status(500).json({ error: err.sqlMessage || err.message });
+  }
+});
+// ------------------------------------------------------------------------
+
 const tableMap = {
   menu: 'menus',
   siswa: 'students',
@@ -85,17 +112,14 @@ Object.keys(tableMap).forEach(route => {
         return res.json(rows);
       }
 
-      // --- BAGIAN YANG DITAMBAHKAN ---
       let query = `SELECT * FROM ??`;
       let params = [tableName];
 
       if (route === 'sekolah') {
         query = `SELECT * FROM ?? WHERE role != 'admin'`;
       } else if (route === 'siswa') {
-        // Data siswa akan otomatis diurutkan berdasarkan Nama (A-Z)
         query = `SELECT * FROM ?? ORDER BY nama_siswa ASC`;
       }
-      // -------------------------------
 
       const [rows] = await db.query(query, params);
       res.json(rows);
@@ -117,6 +141,7 @@ Object.keys(tableMap).forEach(route => {
   });
 
   app.put(`/api/${route}/:id`, async (req, res) => {
+    if(route === 'laporan') return; // FIX: Biar laporan gak masuk ke fungsi update bawaan ini
     try {
       const { id } = req.params;
       const data = req.body;
@@ -128,6 +153,8 @@ Object.keys(tableMap).forEach(route => {
   });
 
   app.delete(`/api/${route}/:id`, async (req, res) => {
+    // Kalau mau ada pengecualian laporan pas di delete, bisa ditambahin if (route === 'laporan') return;
+    // Tapi karena hapus laporan cuma butuh ID dan ga butuh multer, aman aja dilewat generic.
     try {
       const { id } = req.params;
       await db.query(`DELETE FROM ?? WHERE id = ?`, [tableName, id]);

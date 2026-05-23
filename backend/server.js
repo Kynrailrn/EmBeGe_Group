@@ -48,7 +48,6 @@ app.post('/api/laporan', upload.single('foto'), async (req, res) => {
   }
 });
 
-// --- BAGIAN YANG DITAMBAHKAN UNTUK FIX EDIT LAPORAN BISA UPLOAD GAMBAR ---
 app.put('/api/laporan/:id', upload.single('foto'), async (req, res) => {
   try {
     const { id } = req.params;
@@ -58,7 +57,6 @@ app.put('/api/laporan/:id', upload.single('foto'), async (req, res) => {
     let sql = 'UPDATE feedbacks SET rating = ?, komentar = ?';
     let params = [rating || 0, komentar];
 
-    // Jika user upload foto baru saat diedit, update juga fotonya
     if (foto) {
       sql += ', foto_bukti_url = ?';
       params.push(foto);
@@ -73,7 +71,6 @@ app.put('/api/laporan/:id', upload.single('foto'), async (req, res) => {
     res.status(500).json({ error: err.sqlMessage || err.message });
   }
 });
-// ------------------------------------------------------------------------
 
 const tableMap = {
   menu: 'menus',
@@ -82,6 +79,9 @@ const tableMap = {
   jadwal: 'schedules',
   laporan: 'feedbacks'
 };
+
+// Kolom yang boleh masuk ke tabel schedules — field lain dibuang
+const JADWAL_ALLOWED_FIELDS = ['tanggal', 'menu_id', 'sekolah_id', 'status'];
 
 Object.keys(tableMap).forEach(route => {
   const tableName = tableMap[route];
@@ -95,6 +95,7 @@ Object.keys(tableMap).forEach(route => {
           SELECT 
             s.id AS id, 
             s.tanggal,
+            s.status,
             m.id AS menu_id,
             m.nama_menu,
             u.id AS sekolah_id,
@@ -105,7 +106,7 @@ Object.keys(tableMap).forEach(route => {
           INNER JOIN users u ON s.sekolah_id = u.id 
           LEFT JOIN students st ON u.id = st.sekolah_id
           WHERE u.role = 'sekolah'
-          GROUP BY s.id, u.id, m.id, s.tanggal, m.nama_menu, u.nama
+          GROUP BY s.id, u.id, m.id, s.tanggal, s.status, m.nama_menu, u.nama
           ORDER BY s.tanggal DESC, u.nama ASC
         `;
         const [rows] = await db.query(query);
@@ -131,30 +132,74 @@ Object.keys(tableMap).forEach(route => {
   app.post(`/api/${route}`, async (req, res) => {
     if(route === 'laporan') return;
     try {
-      const data = req.body;
+      let data = { ...req.body };
+      
+      if (route === 'jadwal') {
+        // Hanya izinkan kolom yang ada di tabel schedules
+        const filtered = {};
+        JADWAL_ALLOWED_FIELDS.forEach(f => {
+          if (data[f] !== undefined && data[f] !== null && data[f] !== '') {
+            filtered[f] = data[f];
+          }
+        });
+        // Pastikan status default jika tidak dikirim
+        if (!filtered.status) filtered.status = 'Belum Siap';
+        data = filtered;
+      } else {
+        // Halaman lain: buang field titipan umum
+        delete data.jumlah_porsi;
+        delete data.nama_sekolah;
+        delete data.nama_menu;
+      }
+
       if (Object.keys(data).length === 0) return res.status(400).json({ error: "Data tidak boleh kosong" });
       const [result] = await db.query(`INSERT INTO ?? SET ?`, [tableName, data]);
       res.status(201).json({ message: `Berhasil`, id: result.insertId, ...data });
     } catch (err) {
-      res.status(500).json({ error: "Gagal menambah data" });
+      console.error("Error POST:", err.sqlMessage || err.message);
+      res.status(500).json({ message: err.sqlMessage || "Gagal menambah data" });
     }
   });
 
   app.put(`/api/${route}/:id`, async (req, res) => {
-    if(route === 'laporan') return; // FIX: Biar laporan gak masuk ke fungsi update bawaan ini
+    if(route === 'laporan') return; 
     try {
       const { id } = req.params;
-      const data = req.body;
+      let data = { ...req.body };
+
+      // TAMBAHKAN INI SEMENTARA UNTUK DEBUG
+      if (route === 'jadwal') {
+        console.log('=== DEBUG PUT JADWAL ===');
+        console.log('ID:', id);
+        console.log('Body yang diterima:', JSON.stringify(req.body, null, 2));
+      }
+
+      if (route === 'jadwal') {
+        // Hanya izinkan kolom yang ada di tabel schedules
+        const filtered = {};
+        JADWAL_ALLOWED_FIELDS.forEach(f => {
+          if (data[f] !== undefined && data[f] !== null && data[f] !== '') {
+            filtered[f] = data[f];
+          }
+        });
+        data = filtered;
+      } else {
+        // Halaman lain: buang field titipan umum
+        delete data.jumlah_porsi;
+        delete data.nama_sekolah;
+        delete data.nama_menu;
+      }
+
+      if (Object.keys(data).length === 0) return res.status(400).json({ error: "Tidak ada data yang diupdate" });
       await db.query(`UPDATE ?? SET ? WHERE id = ?`, [tableName, data, id]);
       res.json({ message: `Berhasil` });
     } catch (err) {
-      res.status(500).json({ error: "Gagal" });
+      console.error("Error PUT:", err.sqlMessage || err.message);
+      res.status(500).json({ message: err.sqlMessage || "Gagal update data" });
     }
   });
 
   app.delete(`/api/${route}/:id`, async (req, res) => {
-    // Kalau mau ada pengecualian laporan pas di delete, bisa ditambahin if (route === 'laporan') return;
-    // Tapi karena hapus laporan cuma butuh ID dan ga butuh multer, aman aja dilewat generic.
     try {
       const { id } = req.params;
       await db.query(`DELETE FROM ?? WHERE id = ?`, [tableName, id]);
@@ -176,7 +221,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// --- 4. START SERVER ---
 db.getConnection().then(() => console.log('✅ Database Terhubung!'));
 const PORT = process.env.PORT || 5173;
 app.listen(PORT, () => console.log(`🚀 Backend jalan di port ${PORT}`));

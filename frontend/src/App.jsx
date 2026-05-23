@@ -35,7 +35,7 @@ const GLOBAL_CSS = `
     100% { background-position:  200% center; }
   }
 
-  /* ── Sidebar Styles (Sesuai Gambar) ── */
+  /* ── Sidebar Styles ── */
   .sidebar-bg {
     width: 280px;
     background-color: #0f172a;
@@ -67,8 +67,8 @@ const GLOBAL_CSS = `
   }
 
   .sidebar-nav-item.active {
-    background-color: #2c3e56; /* Warna latar belakang aktif kebiruan */
-    color: #10b981; /* Warna teks hijau */
+    background-color: #2c3e56;
+    color: #10b981;
     font-weight: 600;
   }
 
@@ -85,9 +85,7 @@ const GLOBAL_CSS = `
     display: inline-block;
     padding: 4px 8px;
   }
-  .logout-link:hover {
-    opacity: 0.7;
-  }
+  .logout-link:hover { opacity: 0.7; }
 
   /* ── Animasi & Login ── */
   .mbg-logo-box { animation: fadeSlideUp 0.6s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.05s; }
@@ -141,7 +139,6 @@ const GLOBAL_CSS = `
   }
 
   .orb { position: absolute; border-radius: 50%; pointer-events: none; animation: floatOrb linear infinite; }
-
   .food-float {
     position: absolute; pointer-events: none; user-select: none;
     opacity: 0.2; animation: floatFood ease-in-out infinite;
@@ -283,7 +280,6 @@ function buildPages(current, total) {
 
 const PER_PAGE = 10;
 
-// --- OLD STYLES FOR LAPORAN & GENERIC TABLES ---
 const styles = {
   td: { padding: '16px', backgroundColor: '#fff', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155' },
   badge: { padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', display: 'inline-block' },
@@ -362,7 +358,6 @@ function MenuPage({ data, onDelete, onEdit, onTambah, user }) {
   useEffect(() => { setCurrentPage(1); }, [data, search]);
 
   useEffect(() => {
-    // --- DIPERBARUI: API_URL biar nyambung ke port 5173 ---
     axios.get('http://localhost:5173/api/jadwal')
       .then(res => setJadwalData(res.data || []))
       .catch(() => setJadwalData([]));
@@ -465,11 +460,7 @@ function MenuPage({ data, onDelete, onEdit, onTambah, user }) {
           >⊞ Kartu</button>
         </div>
         {user?.role === 'admin' && (
-          <button
-            className="dash-btn"
-            style={{ padding: '9px 18px', fontSize: '13px' }}
-            onClick={onTambah}
-          >
+          <button className="dash-btn" style={{ padding: '9px 18px', fontSize: '13px' }} onClick={onTambah}>
             + Tambah Menu
           </button>
         )}
@@ -482,9 +473,7 @@ function MenuPage({ data, onDelete, onEdit, onTambah, user }) {
               <th className="siswa-th" style={{ width: '48px' }}>No</th>
               <th className="siswa-th">Nama Menu & Isi Paket</th>
               <th className="siswa-th" style={{ width: '130px' }}>Energi (kkal)</th>
-              {user?.role === 'admin' && (
-                <th className="siswa-th" style={{ width: '100px' }}>Aksi</th>
-              )}
+              {user?.role === 'admin' && <th className="siswa-th" style={{ width: '100px' }}>Aksi</th>}
             </tr>
           </thead>
           <tbody>
@@ -819,7 +808,7 @@ function SekolahPage({ data, onDelete, onTambah, user }) {
   );
 }
 
-// --- PAGE: LAPORAN (KOMPONEN BARU SESUAI INSTRUKSI DOSEN) ---
+// --- PAGE: LAPORAN ---
 function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
   const getStatusColor = (rating) => {
     if (rating <= 2) return { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' };
@@ -912,7 +901,6 @@ function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
                 </td>
                 <td style={styles.td}>
                   {item.foto_bukti_url ? (
-                    /* --- DIPERBARUI: URL Bukti pakai port 5173 biar fotonya kebuka --- */
                     <a href={`http://localhost:5173/${item.foto_bukti_url}`} target="_blank" rel="noreferrer" style={styles.linkBukti}>🖼️ Lihat Bukti</a>
                   ) : (
                     <span style={{ color: '#cbd5e1', fontSize: '13px' }}>🚫 Tanpa Foto</span>
@@ -938,7 +926,182 @@ function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
   );
 }
 
-// --- MODAL FORM CONFIG ---
+// --- PAGE: JADWAL (DISTRIBUSI MBG) ---
+function JadwalPage({ data, onDelete, onEdit, onTambah, user, menuList, sekolahList }) {
+  const [search, setSearch]             = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [currentPage, setCurrentPage]   = useState(1);
+
+  useEffect(() => { setCurrentPage(1); }, [data, search, filterStatus]);
+
+  const getStatusStyle = (status) => {
+    switch(status) {
+      case 'Selesai':    return { bg: '#dcfce7', color: '#166634', icon: '✅' };
+      case 'Mendatang':  return { bg: '#e0f2fe', color: '#0369a1', icon: '⏳' };
+      case 'Belum Siap': return { bg: '#fee2e2', color: '#991b1b', icon: '⚠️' };
+      default:           return { bg: '#f1f5f9', color: '#64748b', icon: '❓' };
+    }
+  };
+
+  const filtered = data.filter(j => {
+    const statusData = j.status || 'Belum Siap';
+    const namaMenuFilter   = menuList.find(m => m.id === j.menu_id)?.nama_menu   || j.nama_menu   || '';
+    const namaSekolahFilter = sekolahList.find(s => s.id === j.sekolah_id)?.nama || j.nama_sekolah || '';
+    const matchSearch = !search ||
+      namaSekolahFilter.toLowerCase().includes(search.toLowerCase()) ||
+      namaMenuFilter.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = !filterStatus || statusData === filterStatus;
+    return matchSearch && matchStatus;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const pageData   = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  const startIdx   = (currentPage - 1) * PER_PAGE;
+
+  return (
+    <>
+      <div className="siswa-stat-grid" style={{ marginBottom: '24px' }}>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Total Jadwal</div>
+          <div className="siswa-stat-val">{data.length}</div>
+          <div className="siswa-stat-sub">terdaftar di sistem</div>
+        </div>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Akan Datang (Antre)</div>
+          <div className="siswa-stat-val" style={{ color: '#0369a1' }}>
+            {data.filter(d => (d.status || 'Belum Siap') === 'Mendatang').length}
+          </div>
+          <div className="siswa-stat-sub">siap dikirim</div>
+        </div>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Belum Siap</div>
+          <div className="siswa-stat-val" style={{ color: '#991b1b' }}>
+            {data.filter(d => (d.status || 'Belum Siap') === 'Belum Siap').length}
+          </div>
+          <div className="siswa-stat-sub">perlu perhatian</div>
+        </div>
+        <div className="siswa-stat-card">
+          <div className="siswa-stat-label">Selesai</div>
+          <div className="siswa-stat-val" style={{ color: '#166634' }}>
+            {data.filter(d => (d.status || 'Belum Siap') === 'Selesai').length}
+          </div>
+          <div className="siswa-stat-sub">telah didistribusikan</div>
+        </div>
+      </div>
+
+      <div className="siswa-toolbar">
+        <input
+          className="siswa-search"
+          type="text"
+          placeholder="Cari nama sekolah atau nama menu..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <select className="siswa-filter" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+          <option value="">Semua Status</option>
+          <option value="Belum Siap">Belum Siap</option>
+          <option value="Mendatang">Mendatang</option>
+          <option value="Selesai">Selesai</option>
+        </select>
+        {user?.role === 'admin' && (
+          <button className="dash-btn" style={{ padding: '9px 18px', fontSize: '13px' }} onClick={() => onTambah({ status: 'Belum Siap' })}>
+            + Buat Jadwal
+          </button>
+        )}
+      </div>
+
+      <table className="siswa-table">
+        <thead>
+          <tr>
+            <th className="siswa-th" style={{ width: '48px' }}>No</th>
+            <th className="siswa-th">Jadwal & Menu</th>
+            <th className="siswa-th">Target Sekolah</th>
+            <th className="siswa-th">Status</th>
+            {user?.role === 'admin' && <th className="siswa-th" style={{ width: '90px' }}>Aksi</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {pageData.length === 0 ? (
+            <tr><td colSpan={5} className="siswa-empty">Data jadwal tidak ditemukan.</td></tr>
+          ) : pageData.map((item, i) => {
+            const status  = item.status || 'Belum Siap';
+            const styling = getStatusStyle(status);
+            const namaMenuSekarang    = menuList.find(m => m.id === item.menu_id)?.nama_menu || item.nama_menu   || 'Menu Dihapus / Tidak Valid';
+            const namaSekolahSekarang = sekolahList.find(s => s.id === item.sekolah_id)?.nama || item.nama_sekolah || 'Sekolah Dihapus / Tidak Valid';
+
+            return (
+              <tr key={item.id || i} className="siswa-row">
+                <td className="siswa-td" style={{ color: '#94a3b8', verticalAlign: 'top', paddingTop: '16px' }}>
+                  {startIdx + i + 1}
+                </td>
+                <td className="siswa-td">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontWeight: 600, color: '#0f172a' }}>
+                      {item.tanggal
+                        ? new Date(item.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                        : '-'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                        ID: #{item.id}
+                      </span>
+                      <span>•</span>
+                      <span>Menu: <strong>{namaMenuSekarang}</strong></span>
+                    </div>
+                  </div>
+                </td>
+                <td className="siswa-td">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#e0f2fe', color: '#0369a1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}>
+                      🏫
+                    </div>
+                    <div style={{ fontWeight: 500, color: '#334155' }}>
+                      {namaSekolahSekarang}
+                    </div>
+                  </div>
+                </td>
+                <td className="siswa-td">
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    background: styling.bg, color: styling.color,
+                    padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                  }}>
+                    {styling.icon} {status}
+                  </span>
+                </td>
+                {user?.role === 'admin' && (
+                  <td className="siswa-td" style={{ verticalAlign: 'middle' }}>
+                    <button className="siswa-edit-btn" onClick={() => onEdit(item)} title="Edit">✏️</button>
+                    <button className="siswa-del-btn"  onClick={() => onDelete(item.id)} title="Hapus">🗑️</button>
+                  </td>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {totalPages > 1 && (
+        <div className="pg-wrap">
+          <span className="pg-info">
+            Menampilkan {startIdx + 1}–{Math.min(startIdx + PER_PAGE, filtered.length)} dari {filtered.length} jadwal
+          </span>
+          <div className="pg-btns">
+            <button className="pg-btn" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>‹</button>
+            {buildPages(currentPage, totalPages).map((p, i) =>
+              p === '...'
+                ? <span key={`d${i}`} className="pg-dots">…</span>
+                : <button key={p} className={`pg-btn${p === currentPage ? ' active' : ''}`} onClick={() => setCurrentPage(p)}>{p}</button>
+            )}
+            <button className="pg-btn" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}>›</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// --- MODAL FIELDS CONFIG ---
 const MODAL_FIELDS = {
   menu: [
     { key: 'nama_menu',  label: 'Nama Menu',     placeholder: 'Contoh: Ayam Bakar', type: 'text' },
@@ -951,12 +1114,19 @@ const MODAL_FIELDS = {
     { key: 'sekolah_id', label: 'ID Sekolah', placeholder: 'ID sekolah',         type: 'number' },
   ],
   sekolah: [
-    { key: 'nama',          label: 'Nama Sekolah', placeholder: 'Nama institusi', type: 'text' },
+    { key: 'nama',          label: 'Nama Sekolah', placeholder: 'Nama institusi',   type: 'text' },
     { key: 'email',         label: 'Email',        placeholder: 'email@sekolah.id', type: 'email' },
-    { key: 'password_hash', label: 'Password',     placeholder: 'Password',       type: 'password' },
-    { key: 'role',          label: 'Role',         placeholder: 'sekolah',        type: 'text' },
+    { key: 'password_hash', label: 'Password',     placeholder: 'Password',         type: 'password' },
+    { key: 'role',          label: 'Role',         placeholder: 'sekolah',          type: 'text' },
   ],
-  jadwal:  [{ key: 'tanggal', label: 'Tanggal', placeholder: 'YYYY-MM-DD', type: 'date' }],
+  // ── JADWAL: semua field lengkap, tanggal selalu tampil (termasuk saat edit) ──
+  jadwal: [
+    { key: 'tanggal',    label: 'Tanggal Pengiriman', type: 'date' },
+    { key: 'menu_id',    label: 'Paket Menu Makanan', type: 'select_menu' },
+    { key: 'sekolah_id', label: 'Target Sekolah',     type: 'select_sekolah' },
+    { key: 'status',     label: 'Status Distribusi',  type: 'select',
+      options: ['Belum Siap', 'Mendatang', 'Selesai'] },
+  ],
   laporan: [
     { key: 'komentar', label: 'Komentar', placeholder: 'Tulis komentar...', type: 'textarea' },
     { key: 'rating',   label: 'Rating',   type: 'rating' },
@@ -970,7 +1140,7 @@ const ds = {
   main:         { flex: 1, padding: '40px', height: '100vh', overflowY: 'auto', position: 'relative' },
   card:         { backgroundColor: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.06)', position: 'relative', zIndex: 1 },
   modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(2px)' },
-  modalCard:    { background: 'white', padding: '32px 28px', borderRadius: '20px', width: '460px', boxShadow: '0 24px 48px rgba(0,0,0,0.15)' },
+  modalCard:    { background: 'white', padding: '32px 28px', borderRadius: '20px', width: '460px', boxShadow: '0 24px 48px rgba(0,0,0,0.15)', maxHeight: '90vh', overflowY: 'auto' },
 };
 
 // --- MAIN APP ---
@@ -982,12 +1152,16 @@ export default function App() {
   const [isLoading, setIsLoading]     = useState(false);
   const [page, setPage]               = useState('menu');
   const [data, setData]               = useState([]);
+
+  const [menuList, setMenuList]       = useState([]);
+  const [sekolahList, setSekolahList] = useState([]);
+
   const [showModal, setShowModal]     = useState(false);
   const [editId, setEditId]           = useState(null);
   const [formData, setFormData]       = useState({});
 
-  const cardRef  = useRef(null);
-  const API_URL  = 'http://localhost:5173/api'; 
+  const cardRef = useRef(null);
+  const API_URL = 'http://localhost:5173/api';
 
   const fetchData = useCallback(async () => {
     try {
@@ -998,6 +1172,26 @@ export default function App() {
 
   useEffect(() => { if (user) fetchData(); }, [page, user, fetchData]);
 
+  // Fetch data master menu & sekolah untuk dropdown jadwal
+  const fetchMasterData = useCallback(async () => {
+    try {
+      const [resSekolah, resMenu] = await Promise.all([
+        axios.get(`${API_URL}/sekolah`),
+        axios.get(`${API_URL}/menu`),
+      ]);
+      setSekolahList(resSekolah.data || []);
+      setMenuList(resMenu.data || []);
+    } catch {
+      setSekolahList([]);
+      setMenuList([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    // FIX: fetch master data untuk semua role yang perlu jadwal, bukan hanya admin
+    if (user) fetchMasterData();
+  }, [user, fetchMasterData]);
+
   // ── CRUD handlers ──
   const handleDelete = async (id) => {
     if (!window.confirm('Yakin ingin menghapus data ini?')) return;
@@ -1007,19 +1201,68 @@ export default function App() {
     } catch { alert('Gagal menghapus data.'); }
   };
 
+  // ── FIX UTAMA: handleSimpan yang benar untuk Jadwal ──
   const handleSimpan = async (e) => {
     e.preventDefault();
     try {
       const hasFile = Object.values(formData).some(val => val instanceof File);
-      let dataToSend = formData;
+
+      let dataToSend = { ...formData };
       let config = {};
 
-      if (hasFile || page === 'laporan') {
-        dataToSend = new FormData();
-        for (const key in formData) {
-          dataToSend.append(key, formData[key]);
+      if (page === 'jadwal') {
+        // 1. Buang SEMUA kolom hasil JOIN — bukan kolom asli tabel schedules
+        delete dataToSend.nama_sekolah;
+        delete dataToSend.nama_menu;
+        delete dataToSend.nama;          // u.nama ikut terbawa dari JOIN
+        delete dataToSend.jumlah_porsi;  // hasil COUNT dari JOIN
+
+        // 2. Pastikan menu_id & sekolah_id integer yang valid
+        const menuId    = Number(dataToSend.menu_id);
+        const sekolahId = Number(dataToSend.sekolah_id);
+
+        if (!menuId || isNaN(menuId)) {
+          alert('Pilih Menu terlebih dahulu!');
+          return;
         }
-        dataToSend.append('user_id', user.id);
+        if (!sekolahId || isNaN(sekolahId)) {
+          alert('Pilih Sekolah terlebih dahulu!');
+          return;
+        }
+        dataToSend.menu_id    = menuId;
+        dataToSend.sekolah_id = sekolahId;
+
+        // 3. Format tanggal aman: ubah ISO string -> YYYY-MM-DD
+        if (dataToSend.tanggal) {
+          dataToSend.tanggal = String(dataToSend.tanggal).split('T')[0];
+        }
+
+        // 4. Buang field lain yang mungkin ikut terbawa dari JOIN tapi bukan kolom jadwal
+        //    (id tidak perlu dikirim saat POST, tapi aman dibiarkan saat PUT)
+        if (!editId) delete dataToSend.id;
+
+      } else if (page === 'laporan') {
+        // Laporan pakai FormData karena ada file upload
+        const fd = new FormData();
+        for (const key in dataToSend) {
+          if (dataToSend[key] !== undefined && dataToSend[key] !== null) {
+            fd.append(key, dataToSend[key]);
+          }
+        }
+        fd.append('user_id', user.id);
+        dataToSend = fd;
+        config = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+      } else if (hasFile) {
+        // Halaman lain yang kebetulan punya file
+        const fd = new FormData();
+        for (const key in dataToSend) {
+          if (dataToSend[key] !== undefined && dataToSend[key] !== null) {
+            fd.append(key, dataToSend[key]);
+          }
+        }
+        fd.append('user_id', user.id);
+        dataToSend = fd;
         config = { headers: { 'Content-Type': 'multipart/form-data' } };
       }
 
@@ -1028,13 +1271,19 @@ export default function App() {
       } else {
         await axios.post(`${API_URL}/${page}`, dataToSend, config);
       }
-      
+
       setShowModal(false);
       setFormData({});
       setEditId(null);
       fetchData();
-    } catch { 
-      alert('Gagal menyimpan data.'); 
+
+    } catch (error) {
+      console.error('Detail Error Backend:', error.response?.data || error.message);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error   ||
+        error.message;
+      alert(`Gagal menyimpan data!\n\nAlasan dari Server: ${errorMessage}\n\n*Cek terminal backend/console untuk detailnya.`);
     }
   };
 
@@ -1044,9 +1293,31 @@ export default function App() {
     setShowModal(true);
   };
 
+  // ── FIX: openEdit — untuk jadwal hanya kirim kolom asli tabel schedules ──
   const openEdit = (item) => {
     setEditId(item.id);
-    setFormData({ ...item });
+
+    let cleanItem;
+
+    if (page === 'jadwal') {
+      // Hanya ambil kolom yang benar-benar ada di tabel schedules
+      // Buang semua field hasil JOIN: nama_menu, nama_sekolah, nama, jumlah_porsi, dll
+      cleanItem = {
+        id:         item.id,
+        tanggal:    item.tanggal ? String(item.tanggal).split('T')[0] : '',
+        menu_id:    item.menu_id    != null ? Number(item.menu_id)    : '',
+        sekolah_id: item.sekolah_id != null ? Number(item.sekolah_id) : '',
+        status:     item.status || 'Belum Siap',
+      };
+    } else {
+      // Halaman lain: copy biasa, normalisasi ID jika ada
+      cleanItem = { ...item };
+      if (cleanItem.menu_id    != null) cleanItem.menu_id    = Number(cleanItem.menu_id);
+      if (cleanItem.sekolah_id != null) cleanItem.sekolah_id = Number(cleanItem.sekolah_id);
+      if (cleanItem.tanggal)            cleanItem.tanggal    = String(cleanItem.tanggal).split('T')[0];
+    }
+
+    setFormData(cleanItem);
     setShowModal(true);
   };
 
@@ -1063,31 +1334,12 @@ export default function App() {
     finally { setIsLoading(false); }
   };
 
-  // ── Penyesuaian Nama Menu Berdasarkan Referensi Gambar ──
   const menuConfig = {
     menu:    { title: 'Menu Makanan',   icon: '🍱' },
     siswa:   { title: 'Daftar Siswa',   icon: '👥' },
     sekolah: { title: 'Daftar Sekolah', icon: '🏫' },
-    jadwal:  { 
-      title: 'Distribusi MBG',  icon: '🚚',
-      canCRUD: true,
-      headers: ['ID Jadwal', 'Tanggal Pengiriman', 'ID Menu / Sekolah'],
-      render: (item) => (
-        <>
-          <td style={styles.td}><code>#SCH-{item.id}</code></td>
-          <td style={styles.td}><strong>{new Date(item.tanggal).toLocaleDateString('id-ID')}</strong></td>
-          <td style={styles.td}>
-            Menu ID: {item.menu_id} <br />
-            {item.nama_sekolah && <small style={{ color: '#94a3b8' }}>{item.nama_sekolah}</small>}
-          </td>
-        </>
-      ),
-    },
-    // Laporan sekarang dikelola penuh oleh <LaporanPage />
-    laporan: { 
-      title: 'Feedback',     
-      icon: '📊'
-    },
+    jadwal:  { title: 'Distribusi MBG', icon: '🚚' },
+    laporan: { title: 'Feedback',       icon: '📊' },
   };
 
   // ── Login Screen ──
@@ -1116,7 +1368,8 @@ export default function App() {
   }
 
   // ── Dashboard ──
-  const fields = MODAL_FIELDS[page] || [];
+  const activeFields = MODAL_FIELDS[page] || [];
+
   const modalTitle = editId
     ? `Edit ${menuConfig[page]?.title || page}`
     : `Tambah ${menuConfig[page]?.title || page}`;
@@ -1131,9 +1384,10 @@ export default function App() {
               {modalTitle}
             </h3>
             <form onSubmit={handleSimpan}>
-              {fields.map(f => (
+              {activeFields.map(f => (
                 <div key={f.key}>
                   <label className="modal-label">{f.label}</label>
+
                   {f.type === 'textarea' ? (
                     <textarea
                       className="modal-input"
@@ -1143,6 +1397,7 @@ export default function App() {
                       rows={3}
                       style={{ resize: 'vertical', lineHeight: '1.5' }}
                     />
+
                   ) : f.type === 'rating' ? (
                     <div style={{ display: 'flex', gap: '8px', fontSize: '28px', cursor: 'pointer', marginBottom: '16px' }}>
                       {[1, 2, 3, 4, 5].map(star => (
@@ -1150,11 +1405,10 @@ export default function App() {
                           key={star}
                           onClick={() => setFormData({ ...formData, [f.key]: star })}
                           style={{ color: (formData[f.key] || 0) >= star ? '#f59e0b' : '#e2e8f0', transition: '0.2s' }}
-                        >
-                          ★
-                        </span>
+                        >★</span>
                       ))}
                     </div>
+
                   ) : f.type === 'file' ? (
                     <input
                       className="modal-input"
@@ -1163,6 +1417,54 @@ export default function App() {
                       onChange={e => setFormData({ ...formData, [f.key]: e.target.files[0] })}
                       style={{ padding: '8px', background: 'transparent', border: '1px dashed #cbd5e1' }}
                     />
+
+                  ) : f.type === 'select' ? (
+                    <select
+                      className="modal-input"
+                      value={formData[f.key] || ''}
+                      onChange={e => setFormData({ ...formData, [f.key]: e.target.value })}
+                      required
+                    >
+                      <option value="" disabled>Pilih {f.label}</option>
+                      {f.options.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+
+                  ) : f.type === 'select_menu' ? (
+                    // FIX: value dibandingkan sebagai Number, onChange simpan sebagai Number
+                    <select
+                      className="modal-input"
+                      value={formData[f.key] || ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setFormData({ ...formData, [f.key]: val ? Number(val) : '' });
+                      }}
+                      required
+                    >
+                      <option value="" disabled>-- Pilih Menu yang Tersedia --</option>
+                      {menuList.map(m => (
+                        <option key={m.id} value={m.id}>{m.nama_menu}</option>
+                      ))}
+                    </select>
+
+                  ) : f.type === 'select_sekolah' ? (
+                    // FIX: value dibandingkan sebagai Number, onChange simpan sebagai Number
+                    <select
+                      className="modal-input"
+                      value={formData[f.key] || ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setFormData({ ...formData, [f.key]: val ? Number(val) : '' });
+                      }}
+                      required
+                    >
+                      <option value="" disabled>-- Pilih Sekolah Target --</option>
+                      {sekolahList.map(s => (
+                        <option key={s.id} value={s.id}>{s.nama || s.email}</option>
+                      ))}
+                    </select>
+
                   ) : (
                     <input
                       className="modal-input"
@@ -1175,6 +1477,7 @@ export default function App() {
                   )}
                 </div>
               ))}
+
               <div className="modal-btn-row">
                 <button type="button" className="modal-btn-cancel" onClick={() => setShowModal(false)}>Batal</button>
                 <button type="submit" className="modal-btn-save">
@@ -1186,7 +1489,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Sidebar (Diperbarui Sesuai Gambar) ── */}
+      {/* ── Sidebar ── */}
       <div className="sidebar-bg">
         <div style={{ textAlign: 'center', marginBottom: '45px' }}>
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981', fontFamily: "'Sora', sans-serif", marginBottom: '8px' }}>
@@ -1223,9 +1526,9 @@ export default function App() {
             </h2>
             <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
               {page === 'laporan' ? 'Pantau ulasan, rating, dan bukti foto terkait distribusi MBG dari sekolah.' :
-               page === 'jadwal' ? 'Kelola jadwal pengiriman dan riwayat distribusi makanan.' :
-               page === 'menu' ? 'Manajemen daftar menu makanan dan kandungan gizi harian.' :
-               page === 'siswa' ? 'Kelola basis data siswa penerima manfaat program MBG.' :
+               page === 'jadwal'  ? 'Kelola jadwal pengiriman dan riwayat distribusi makanan.' :
+               page === 'menu'    ? 'Manajemen daftar menu makanan dan kandungan gizi harian.' :
+               page === 'siswa'   ? 'Kelola basis data siswa penerima manfaat program MBG.' :
                'Pengaturan hak akses admin dan informasi institusi terdaftar.'}
             </p>
           </div>
@@ -1254,48 +1557,24 @@ export default function App() {
               onTambah={() => openTambah({ role: 'sekolah' })}
             />
           ) : page === 'laporan' ? (
-            <LaporanPage 
+            <LaporanPage
               data={data}
               user={user}
               onDelete={handleDelete}
               onTambah={() => openTambah()}
               onEdit={openEdit}
             />
-          ) : (
-            <>
-              {/* --- TABEL GENERIC (Sekarang cuma dipakai Jadwal) --- */}
-              {menuConfig[page].canCRUD && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-                  <button className="dash-btn" style={{ padding: '9px 18px', fontSize: '13px' }} onClick={() => openTambah()}>
-                    + Tambah Data
-                  </button>
-                </div>
-              )}
-              
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th className="siswa-th" style={{ width: '48px' }}>No</th>
-                    {menuConfig[page].headers?.map(h => <th key={h} className="siswa-th">{h}</th>)}
-                    <th className="siswa-th" style={{ width: '80px' }}>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.length === 0 ? (
-                    <tr><td colSpan={10} className="siswa-empty">Data tidak ditemukan.</td></tr>
-                  ) : data.map((it, i) => (
-                    <tr key={i} className="siswa-row">
-                      <td className="siswa-td" style={{ color: '#94a3b8' }}>{i + 1}</td>
-                      {menuConfig[page].render(it)}
-                      <td className="siswa-td">
-                        <button className="siswa-del-btn" onClick={() => handleDelete(it.id)}>🗑️</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
+          ) : page === 'jadwal' ? (
+            <JadwalPage
+              data={data}
+              user={user}
+              menuList={menuList}
+              sekolahList={sekolahList}
+              onDelete={handleDelete}
+              onTambah={(defaultData) => openTambah(defaultData)}
+              onEdit={openEdit}
+            />
+          ) : null}
         </div>
       </div>
     </div>

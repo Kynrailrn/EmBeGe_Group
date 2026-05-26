@@ -149,7 +149,7 @@ Object.keys(tableMap).forEach(route => {
         // Halaman lain: buang field titipan umum
         delete data.jumlah_porsi;
         delete data.nama_sekolah;
-        delete data.nama_menu;
+        if (route !== 'menu') delete data.nama_menu;
       }
 
       if (Object.keys(data).length === 0) return res.status(400).json({ error: "Data tidak boleh kosong" });
@@ -187,7 +187,7 @@ Object.keys(tableMap).forEach(route => {
         // Halaman lain: buang field titipan umum
         delete data.jumlah_porsi;
         delete data.nama_sekolah;
-        delete data.nama_menu;
+        if (route !== 'menu') delete data.nama_menu;
       }
 
       if (Object.keys(data).length === 0) return res.status(400).json({ error: "Tidak ada data yang diupdate" });

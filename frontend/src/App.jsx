@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
+import LandingPage from './LandingPage'; // <-- IMPORT LANDING PAGE
 
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@300;400;600;700&display=swap');
@@ -1148,6 +1149,7 @@ export default function App() {
   useGlobalStyle(GLOBAL_CSS);
 
   const [user, setUser]               = useState(null);
+  const [showLogin, setShowLogin]     = useState(false); // <-- STATE UNTUK ROUTING LANDING PAGE
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading]     = useState(false);
   const [page, setPage]               = useState('menu');
@@ -1198,6 +1200,7 @@ export default function App() {
     try {
       await axios.delete(`${API_URL}/${page}/${id}`);
       fetchData();
+      fetchMasterData();
     } catch { alert('Gagal menghapus data.'); }
   };
 
@@ -1276,6 +1279,7 @@ export default function App() {
       setFormData({});
       setEditId(null);
       fetchData();
+      fetchMasterData();
 
     } catch (error) {
       console.error('Detail Error Backend:', error.response?.data || error.message);
@@ -1342,10 +1346,32 @@ export default function App() {
     laporan: { title: 'Feedback',       icon: '📊' },
   };
 
-  // ── Login Screen ──
+  // ── ROUTING: Landing Page / Login / Dashboard ──
   if (!user) {
+    if (!showLogin) {
+      // Tampilkan Landing Page, dan jika tombol di-klik, arahkan ke Login
+      return <LandingPage onNavigateLogin={() => setShowLogin(true)} />;
+    }
+
+    // Tampilan Form Login
     return (
       <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0a1628', color: 'white', fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'relative', overflow: 'hidden' }}>
+        
+        {/* Tombol Kembali ke Landing Page */}
+        <button 
+          onClick={() => setShowLogin(false)}
+          style={{ 
+            position: 'absolute', top: '30px', left: '30px', background: 'rgba(255, 255, 255, 0.05)', 
+            color: '#cbd5e1', border: '1px solid rgba(255, 255, 255, 0.1)', cursor: 'pointer', zIndex: 10, 
+            padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', 
+            transition: 'background 0.2s' 
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+        >
+          ← Kembali Beranda
+        </button>
+
         <OrbBackground />
         <div className="mbg-logo-box" style={{ marginBottom: '18px', zIndex: 1 }}>
           <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 700, animation: 'pulse-glow 3s infinite' }}>MBG</div>

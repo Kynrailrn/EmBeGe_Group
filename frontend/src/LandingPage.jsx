@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage({ onNavigateLogin }) {
-  // Fungsi halus untuk scroll (opsional, agar scroll lebih rapi)
+  // Fungsi halus untuk scroll
   const scrollToSection = (e, id) => {
     e.preventDefault();
     const element = document.getElementById(id);
@@ -33,6 +33,8 @@ export default function LandingPage({ onNavigateLogin }) {
             <a href="#fitur" onClick={(e) => scrollToSection(e, 'fitur')} className="hover:text-emerald-600 transition-colors">Fitur</a>
             <a href="#cara-kerja" onClick={(e) => scrollToSection(e, 'cara-kerja')} className="hover:text-emerald-600 transition-colors">Cara Kerja</a>
             <a href="#dampak" onClick={(e) => scrollToSection(e, 'dampak')} className="hover:text-emerald-600 transition-colors">Dampak</a>
+            {/* Menu Anggota Baru */}
+            <a href="#anggota" onClick={(e) => scrollToSection(e, 'anggota')} className="hover:text-emerald-600 transition-colors">Anggota</a>
           </div>
 
           <button 
@@ -65,21 +67,7 @@ export default function LandingPage({ onNavigateLogin }) {
             Platform manajemen cerdas untuk menjadwalkan, memantau, dan memastikan setiap porsi makanan sampai ke siswa dengan standar gizi yang tepat.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button 
-              onClick={onNavigateLogin}
-              className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-lg shadow-xl shadow-emerald-500/30 transition-all hover:-translate-y-1 w-full sm:w-auto"
-            >
-              Akses Dashboard
-            </button>
-            <a 
-              href="#fitur"
-              onClick={(e) => scrollToSection(e, 'fitur')}
-              className="px-8 py-4 bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 rounded-xl font-semibold text-lg transition-all w-full sm:w-auto text-center"
-            >
-              Pelajari Fitur
-            </a>
-          </div>
+          
         </div>
       </section>
 
@@ -184,6 +172,24 @@ export default function LandingPage({ onNavigateLogin }) {
         </div>
       </section>
 
+      {/* ── ANGGOTA SECTION ── */}
+      <section id="anggota" className="py-24 bg-white pt-28">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h2 className="font-['Sora'] text-3xl md:text-4xl font-bold text-slate-900 mb-4">Tim Kami</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto mb-16">
+            Orang-orang hebat di balik pengembangan sistem DistriMBG.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-10">
+            <MemberCard name="Fadhel Yihua Rafael" image="/fadel.jpeg" />
+            <MemberCard name="Muhammad Randy Ilham A" image="/randy.jpeg" />
+            <MemberCard name="Jonathan Hibran Ramadhan" image="/jojo.jpeg" />
+            <MemberCard name="Muhamad Rizky Nur Awalin" image="/awalin.jpeg" />
+            <MemberCard name="Fadhil Muhammad Zain" image="/fadil.jpeg" />
+          </div>
+        </div>
+      </section>
+
       {/* ── FOOTER ── */}
       <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -193,7 +199,7 @@ export default function LandingPage({ onNavigateLogin }) {
             </div>
             <span className="font-['Sora'] font-bold text-lg text-white">DistriMBG Project</span>
           </div>
-          <p className="text-sm">© {new Date().getFullYear()} EmBeGe Projeck.</p>
+          <p className="text-sm">© {new Date().getFullYear()} EmBeGe Group.</p>
         </div>
       </footer>
     </div>
@@ -239,6 +245,26 @@ function ImpactCard({ icon, stat, desc }) {
       </div>
       <h3 className="font-['Sora'] text-2xl font-bold text-white mb-3">{stat}</h3>
       <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
+// Komponen baru untuk foto anggota
+function MemberCard({ name, image }) {
+  return (
+    <div className="text-center group">
+      <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 border-4 border-slate-100 shadow-md group-hover:border-emerald-200 transition-all">
+        <img 
+          src={image} 
+          alt={name} 
+          className="w-full h-full object-cover bg-slate-200"
+          // Jika foto belum ada, otomatis membuat gambar inisial nama sementara
+          onError={(e) => {
+            e.target.src = `https://ui-avatars.com/api/?name=${name}&background=10b981&color=fff`;
+          }}
+        />
+      </div>
+      <h3 className="font-['Sora'] font-bold text-slate-900">{name}</h3>
     </div>
   );
 }

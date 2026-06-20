@@ -809,27 +809,67 @@ function SekolahPage({ data, onDelete, onTambah, user }) {
   );
 }
 
-// --- PAGE: LAPORAN ---
-function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
+// --- PAGE: LAPORAN (CONSUMING API DENGAN HOOKS - SPRINT 10) ---
+function LaporanPage({ globalData, onTambah, onEdit, user }) {
+  const [laporanData, setLaporanData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLaporan = async () => {
+      try {
+        setIsLoading(true);
+        // [cite: 1041, 1042] Menggunakan efek samping untuk Fetch API sesuai materi PDF
+        const res = await axios.get('http://localhost:5173/api/laporan');
+        if (isMounted) {
+          setLaporanData(res.data);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) setError(err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchLaporan();
+    return () => { isMounted = false; };
+  }, [globalData]); // [cite: 1134, 1135] Array dependency untuk trigger re-fetch saat parent data berubah
+
   const getStatusColor = (rating) => {
     if (rating <= 2) return { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' };
     if (rating === 3) return { bg: '#fffbeb', border: '#f59e0b', text: '#854d0e' };
     return { bg: '#f0fdf4', border: '#10b981', text: '#166534' };
   };
 
+  const handleDeleteLocal = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data ini?')) return;
+    try {
+      await axios.delete(`http://localhost:5173/api/laporan/${id}`);
+      const res = await axios.get('http://localhost:5173/api/laporan');
+      setLaporanData(res.data);
+    } catch (err) {
+      alert('Gagal menghapus data.');
+    }
+  };
+
+  if (isLoading) return <p style={{textAlign: 'center', padding: '20px', color: '#64748b'}}>Loading mengambil data laporan...</p>;
+  if (error) return <p style={{textAlign: 'center', padding: '20px', color: '#ef4444'}}>Error: {error}</p>;
+
   return (
     <>
       <div className="siswa-stat-grid" style={{ marginBottom: '20px' }}>
         <div className="siswa-stat-card">
           <div className="siswa-stat-label">Total Ulasan</div>
-          <div className="siswa-stat-val">{data.length}</div>
+          <div className="siswa-stat-val">{laporanData.length}</div>
           <div className="siswa-stat-sub">masuk ke sistem</div>
         </div>
         <div className="siswa-stat-card">
           <div className="siswa-stat-label">Rata-rata Rating</div>
           <div className="siswa-stat-val">
-            {data.length > 0 
-              ? (data.reduce((acc, curr) => acc + (curr.rating || 0), 0) / data.length).toFixed(1) 
+            {laporanData.length > 0 
+              ? (laporanData.reduce((acc, curr) => acc + (curr.rating || 0), 0) / laporanData.length).toFixed(1) 
               : '0.0'}
             <span style={{ fontSize: '16px', color: '#f59e0b', marginLeft: '4px' }}>★</span>
           </div>
@@ -838,14 +878,14 @@ function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
         <div className="siswa-stat-card">
           <div className="siswa-stat-label">Ulasan Positif</div>
           <div className="siswa-stat-val" style={{ color: '#10b981' }}>
-            {data.filter(d => (d.rating || 0) >= 4).length}
+            {laporanData.filter(d => (d.rating || 0) >= 4).length}
           </div>
           <div className="siswa-stat-sub">rating 4 & 5</div>
         </div>
         <div className="siswa-stat-card">
           <div className="siswa-stat-label">Perlu Perhatian</div>
           <div className="siswa-stat-val" style={{ color: '#ef4444' }}>
-            {data.filter(d => (d.rating || 0) <= 2).length}
+            {laporanData.filter(d => (d.rating || 0) <= 2).length}
           </div>
           <div className="siswa-stat-sub">rating 1 & 2</div>
         </div>
@@ -872,9 +912,9 @@ function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
           </tr>
         </thead>
         <tbody>
-          {data.length === 0 ? (
+          {laporanData.length === 0 ? (
             <tr><td colSpan={6} className="siswa-empty">Data tidak ditemukan.</td></tr>
-          ) : data.map((item, i) => {
+          ) : laporanData.map((item, i) => {
             const colors = getStatusColor(item.rating || 5);
             return (
               <tr key={item.id || i} className="siswa-row">
@@ -912,7 +952,7 @@ function LaporanPage({ data, onDelete, onTambah, onEdit, user }) {
                   {(user?.role === 'admin' || user?.id === item.user_id) ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                       <button className="siswa-edit-btn" onClick={() => onEdit(item)} title="Edit">✏️</button>
-                      <button className="siswa-del-btn" onClick={() => onDelete(item.id)} title="Hapus">🗑️</button>
+                      <button className="siswa-del-btn" onClick={() => handleDeleteLocal(item.id)} title="Hapus">🗑️</button>
                     </div>
                   ) : (
                     <span style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '500' }}>🔒 Terkunci</span>
@@ -1120,7 +1160,6 @@ const MODAL_FIELDS = {
     { key: 'password_hash', label: 'Password',     placeholder: 'Password',         type: 'password' },
     { key: 'role',          label: 'Role',         placeholder: 'sekolah',          type: 'text' },
   ],
-  // ── JADWAL: semua field lengkap, tanggal selalu tampil (termasuk saat edit) ──
   jadwal: [
     { key: 'tanggal',    label: 'Tanggal Pengiriman', type: 'date' },
     { key: 'menu_id',    label: 'Paket Menu Makanan', type: 'select_menu' },
@@ -1149,7 +1188,7 @@ export default function App() {
   useGlobalStyle(GLOBAL_CSS);
 
   const [user, setUser]               = useState(null);
-  const [showLogin, setShowLogin]     = useState(false); // <-- STATE UNTUK ROUTING LANDING PAGE
+  const [showLogin, setShowLogin]     = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading]     = useState(false);
   const [page, setPage]               = useState('menu');
@@ -1174,7 +1213,6 @@ export default function App() {
 
   useEffect(() => { if (user) fetchData(); }, [page, user, fetchData]);
 
-  // Fetch data master menu & sekolah untuk dropdown jadwal
   const fetchMasterData = useCallback(async () => {
     try {
       const [resSekolah, resMenu] = await Promise.all([
@@ -1190,11 +1228,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // FIX: fetch master data untuk semua role yang perlu jadwal, bukan hanya admin
     if (user) fetchMasterData();
   }, [user, fetchMasterData]);
 
-  // ── CRUD handlers ──
   const handleDelete = async (id) => {
     if (!window.confirm('Yakin ingin menghapus data ini?')) return;
     try {
@@ -1204,7 +1240,6 @@ export default function App() {
     } catch { alert('Gagal menghapus data.'); }
   };
 
-  // ── FIX UTAMA: handleSimpan yang benar untuk Jadwal ──
   const handleSimpan = async (e) => {
     e.preventDefault();
     try {
@@ -1214,13 +1249,11 @@ export default function App() {
       let config = {};
 
       if (page === 'jadwal') {
-        // 1. Buang SEMUA kolom hasil JOIN — bukan kolom asli tabel schedules
         delete dataToSend.nama_sekolah;
         delete dataToSend.nama_menu;
-        delete dataToSend.nama;          // u.nama ikut terbawa dari JOIN
-        delete dataToSend.jumlah_porsi;  // hasil COUNT dari JOIN
+        delete dataToSend.nama;
+        delete dataToSend.jumlah_porsi;
 
-        // 2. Pastikan menu_id & sekolah_id integer yang valid
         const menuId    = Number(dataToSend.menu_id);
         const sekolahId = Number(dataToSend.sekolah_id);
 
@@ -1235,17 +1268,13 @@ export default function App() {
         dataToSend.menu_id    = menuId;
         dataToSend.sekolah_id = sekolahId;
 
-        // 3. Format tanggal aman: ubah ISO string -> YYYY-MM-DD
         if (dataToSend.tanggal) {
           dataToSend.tanggal = String(dataToSend.tanggal).split('T')[0];
         }
 
-        // 4. Buang field lain yang mungkin ikut terbawa dari JOIN tapi bukan kolom jadwal
-        //    (id tidak perlu dikirim saat POST, tapi aman dibiarkan saat PUT)
         if (!editId) delete dataToSend.id;
 
       } else if (page === 'laporan') {
-        // Laporan pakai FormData karena ada file upload
         const fd = new FormData();
         for (const key in dataToSend) {
           if (dataToSend[key] !== undefined && dataToSend[key] !== null) {
@@ -1257,7 +1286,6 @@ export default function App() {
         config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
       } else if (hasFile) {
-        // Halaman lain yang kebetulan punya file
         const fd = new FormData();
         for (const key in dataToSend) {
           if (dataToSend[key] !== undefined && dataToSend[key] !== null) {
@@ -1297,15 +1325,12 @@ export default function App() {
     setShowModal(true);
   };
 
-  // ── FIX: openEdit — untuk jadwal hanya kirim kolom asli tabel schedules ──
   const openEdit = (item) => {
     setEditId(item.id);
 
     let cleanItem;
 
     if (page === 'jadwal') {
-      // Hanya ambil kolom yang benar-benar ada di tabel schedules
-      // Buang semua field hasil JOIN: nama_menu, nama_sekolah, nama, jumlah_porsi, dll
       cleanItem = {
         id:         item.id,
         tanggal:    item.tanggal ? String(item.tanggal).split('T')[0] : '',
@@ -1314,7 +1339,6 @@ export default function App() {
         status:     item.status || 'Belum Siap',
       };
     } else {
-      // Halaman lain: copy biasa, normalisasi ID jika ada
       cleanItem = { ...item };
       if (cleanItem.menu_id    != null) cleanItem.menu_id    = Number(cleanItem.menu_id);
       if (cleanItem.sekolah_id != null) cleanItem.sekolah_id = Number(cleanItem.sekolah_id);
@@ -1342,22 +1366,17 @@ export default function App() {
     menu:    { title: 'Menu Makanan',   icon: '🍱' },
     siswa:   { title: 'Daftar Siswa',   icon: '👥' },
     sekolah: { title: 'Daftar Sekolah', icon: '🏫' },
-    jadwal:  { title: 'Distribusi MBG', icon: '🚚' },
+    jadwal:  { title: 'Distribusi MBG', icon: '🚚', canCRUD: true },
     laporan: { title: 'Feedback',       icon: '📊' },
   };
 
-  // ── ROUTING: Landing Page / Login / Dashboard ──
   if (!user) {
     if (!showLogin) {
-      // Tampilkan Landing Page, dan jika tombol di-klik, arahkan ke Login
       return <LandingPage onNavigateLogin={() => setShowLogin(true)} />;
     }
 
-    // Tampilan Form Login
     return (
       <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0a1628', color: 'white', fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'relative', overflow: 'hidden' }}>
-        
-        {/* Tombol Kembali ke Landing Page */}
         <button 
           onClick={() => setShowLogin(false)}
           style={{ 
@@ -1393,16 +1412,13 @@ export default function App() {
     );
   }
 
-  // ── Dashboard ──
   const activeFields = MODAL_FIELDS[page] || [];
-
   const modalTitle = editId
     ? `Edit ${menuConfig[page]?.title || page}`
     : `Tambah ${menuConfig[page]?.title || page}`;
 
   return (
     <div style={ds.container}>
-      {/* ── Modal ── */}
       {showModal && (
         <div style={ds.modalOverlay} onClick={() => setShowModal(false)}>
           <div style={ds.modalCard} onClick={e => e.stopPropagation()}>
@@ -1458,7 +1474,6 @@ export default function App() {
                     </select>
 
                   ) : f.type === 'select_menu' ? (
-                    // FIX: value dibandingkan sebagai Number, onChange simpan sebagai Number
                     <select
                       className="modal-input"
                       value={formData[f.key] || ''}
@@ -1475,7 +1490,6 @@ export default function App() {
                     </select>
 
                   ) : f.type === 'select_sekolah' ? (
-                    // FIX: value dibandingkan sebagai Number, onChange simpan sebagai Number
                     <select
                       className="modal-input"
                       value={formData[f.key] || ''}
@@ -1515,7 +1529,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Sidebar ── */}
       <div className="sidebar-bg">
         <div style={{ textAlign: 'center', marginBottom: '45px' }}>
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981', fontFamily: "'Sora', sans-serif", marginBottom: '8px' }}>
@@ -1543,7 +1556,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── Main Content ── */}
       <div style={ds.main}>
         <div style={ds.card}>
           <div style={{ marginBottom: '25px' }}>
@@ -1560,33 +1572,15 @@ export default function App() {
           </div>
 
           {page === 'menu' ? (
-            <MenuPage
-              data={data}
-              user={user}
-              onDelete={handleDelete}
-              onTambah={() => openTambah()}
-              onEdit={openEdit}
-            />
+            <MenuPage data={data} user={user} onDelete={handleDelete} onTambah={() => openTambah()} onEdit={openEdit} />
           ) : page === 'siswa' ? (
-            <SiswaPage
-              data={data}
-              user={user}
-              onDelete={handleDelete}
-              onTambah={() => openTambah()}
-              onEdit={openEdit}
-            />
+            <SiswaPage data={data} user={user} onDelete={handleDelete} onTambah={() => openTambah()} onEdit={openEdit} />
           ) : page === 'sekolah' ? (
-            <SekolahPage
-              data={data}
-              user={user}
-              onDelete={handleDelete}
-              onTambah={() => openTambah({ role: 'sekolah' })}
-            />
+            <SekolahPage data={data} user={user} onDelete={handleDelete} onTambah={() => openTambah({ role: 'sekolah' })} />
           ) : page === 'laporan' ? (
-            <LaporanPage
-              data={data}
+            <LaporanPage 
+              globalData={data} 
               user={user}
-              onDelete={handleDelete}
               onTambah={() => openTambah()}
               onEdit={openEdit}
             />

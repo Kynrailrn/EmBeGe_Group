@@ -37,6 +37,7 @@ const GLOBAL_CSS = `
     100% { background-position:  200% center; }
   }
 
+  /* ── Sidebar Styles ── */
   .sidebar-bg {
     width: 280px;
     background-color: #0f172a;
@@ -65,12 +66,12 @@ const GLOBAL_CSS = `
     font-size: 15px;
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: #f8fafc;
-    text-decoration: none;
+    text-decoration: none; /* Tambahan untuk Link Router */
   }
 
   .sidebar-nav-item.active {
-    background-color: #2c3e56; 
-    color: #10b981; 
+    background-color: #2c3e56;
+    color: #10b981;
     font-weight: 600;
   }
 
@@ -89,6 +90,7 @@ const GLOBAL_CSS = `
   }
   .logout-link:hover { opacity: 0.7; }
 
+  /* ── Animasi & Login ── */
   .mbg-logo-box { animation: fadeSlideUp 0.6s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.05s; }
   .mbg-hero-title { animation: fadeSlideUp 0.6s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.15s; }
   .mbg-hero-sub { animation: fadeSlideUp 0.6s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.22s; }
@@ -155,6 +157,7 @@ const GLOBAL_CSS = `
   }
   .dash-btn:hover { transform: scale(1.04) translateY(-1px); box-shadow: 0 8px 24px rgba(16,185,129,0.4); }
 
+  /* ── Stats & Toolbar ── */
   .siswa-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
   .siswa-stat-card { background: #f8fafc; border-radius: 14px; padding: 16px 18px; border: 1px solid #e2e8f0; }
   .siswa-stat-label { font-size: 11px; color: #94a3b8; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
@@ -176,6 +179,7 @@ const GLOBAL_CSS = `
     color: #334155; background: #f8fafc; outline: none; cursor: pointer;
   }
 
+  /* ── Table ── */
   .siswa-table { width: 100%; border-collapse: collapse; }
   .siswa-th {
     text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
@@ -201,6 +205,7 @@ const GLOBAL_CSS = `
   .siswa-edit-btn:hover { background: #dbeafe; color: #1d4ed8; }
   .siswa-empty { text-align: center; padding: 48px 20px; color: #94a3b8; font-size: 14px; }
 
+  /* ── Pagination ── */
   .pg-wrap { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; flex-wrap: wrap; gap: 10px; }
   .pg-info { font-size: 12px; color: #94a3b8; }
   .pg-btns { display: flex; gap: 4px; align-items: center; }
@@ -215,6 +220,7 @@ const GLOBAL_CSS = `
   .pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .pg-dots { padding: 0 4px; color: #cbd5e1; font-size: 13px; }
 
+  /* ── Menu Card View ── */
   .menu-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 8px; }
   .menu-card {
     background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;
@@ -234,6 +240,7 @@ const GLOBAL_CSS = `
   .menu-toggle-btn { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; color: #64748b; cursor: pointer; font-size: 13px; transition: all 0.15s; font-family: 'Plus Jakarta Sans', sans-serif; }
   .menu-toggle-btn.active { background: #10b981; color: white; border-color: #10b981; }
 
+  /* ── Modal Form ── */
   .modal-label { display: block; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
   .modal-input { width: 100%; padding: 10px 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: #0f172a; background: #f8fafc; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
   .modal-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); background: white; }
@@ -244,7 +251,7 @@ const GLOBAL_CSS = `
   .modal-btn-save:hover { background: #059669; transform: translateY(-1px); }
 `;
 
-// --- UTILS & GLOBAL CSS ---
+// --- UTILS ---
 function useGlobalStyle(css) {
   useEffect(() => {
     const el = document.createElement('style');
@@ -286,7 +293,7 @@ const styles = {
   linkBukti: { color: '#2563eb', textDecoration: 'none', fontWeight: '600', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '6px 12px', backgroundColor: '#eff6ff', borderRadius: '8px', transition: '0.3s' }
 };
 
-// --- ANIMATION COMPONENTS ---
+// --- COMPONENTS ---
 function OrbBackground() {
   const ORBS = [
     { w: 420, h: 420, top: '-100px', left: '-100px', color: 'rgba(16,185,129,0.13)', dur: '18s', delay: '0s' },
@@ -353,7 +360,6 @@ export const AuthContext = createContext();
 export const LaporanContext = createContext();
 
 function AuthProvider({ children }) {
-  // Global State Management untuk Session User
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('auth_token')) || null);
 
   const login = (userData) => {
@@ -374,7 +380,6 @@ function AuthProvider({ children }) {
 }
 
 function LaporanProvider({ children }) {
-  // Global State Management Khusus Laporan/Feedback
   const [laporanData, setLaporanData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -931,7 +936,7 @@ function JadwalPage({ data, onDelete, onEdit, onTambah, user, menuList, sekolahL
 function LaporanPage({ onTambah, onEdit }) {
   // SPRINT 13: Panggil Data Laporan dari Context API
   const { laporanData, isLoading, error, fetchLaporan } = useContext(LaporanContext);
-  const { user } = useContext(AuthContext); // SPRINT 13: Autentikasi Pengguna di Frontend[cite: 5]
+  const { user } = useContext(AuthContext); // SPRINT 13: Autentikasi Pengguna di Frontend
 
   const getStatusColor = (rating) => {
     if (rating <= 2) return { bg: '#fef2f2', border: '#ef4444', text: '#991b1b' };
@@ -1098,9 +1103,11 @@ function DashboardLayout() {
   const [editId, setEditId]           = useState(null);
   const [formData, setFormData]       = useState({});
 
+  const API_URL = 'http://localhost:5173/api';
+
   const fetchData = useCallback(async () => {
     try {
-      if (page === 'laporan') return; // Laporan dihandle Global State[cite: 5]
+      if (page === 'laporan') return; // Laporan dihandle Global State
       const res = await axios.get(`${API_URL}/${page}`);
       setData(res.data);
     } catch { setData([]); }
@@ -1160,7 +1167,7 @@ function DashboardLayout() {
       setShowModal(false); setFormData({}); setEditId(null);
       
       fetchData(); fetchMasterData();
-      if (page === 'laporan') fetchLaporan(); // Global State Laporan Refresh[cite: 5]
+      if (page === 'laporan') fetchLaporan(); // Global State Laporan Refresh
 
     } catch (error) {
       alert(`Gagal menyimpan data! Server: ${error.response?.data?.message || error.message}`);
@@ -1181,7 +1188,7 @@ function DashboardLayout() {
     setFormData(cleanItem); setShowModal(true);
   };
 
-  const handleLogout = () => { logout(); navigate('/'); }; // SPRINT 13: Logout routing[cite: 3, 5]
+  const handleLogout = () => { logout(); navigate('/'); }; // SPRINT 13: Logout routing
 
   const menuConfig = {
     menu:    { title: 'Menu Makanan',   icon: '🍱', path: '/menu' },
@@ -1251,7 +1258,7 @@ function DashboardLayout() {
             <Route path="menu" element={<MenuPage data={data} user={user} onDelete={handleDelete} onTambah={() => openTambah()} onEdit={openEdit} />} />
             <Route path="siswa" element={<SiswaPage data={data} user={user} onDelete={handleDelete} onTambah={() => openTambah()} onEdit={openEdit} />} />
             <Route path="sekolah" element={<SekolahPage data={data} user={user} onDelete={handleDelete} onTambah={() => openTambah({ role: 'sekolah' })} />} />
-            <Route path="jadwal" element={<JadwalPage data={data} user={user} menuList={menuList} sekolahList={sekolahList} onDelete={handleDelete} onTambah={(def) => openTambah(defaultData)} onEdit={openEdit} />} />
+            <Route path="jadwal" element={<JadwalPage data={data} user={user} menuList={menuList} sekolahList={sekolahList} onDelete={handleDelete} onTambah={(def) => openTambah(def)} onEdit={openEdit} />} />
             <Route path="laporan" element={<LaporanPage onTambah={() => openTambah()} onEdit={openEdit} />} />
             <Route path="*" element={<Navigate to="/laporan" replace />} />
           </Routes>
@@ -1269,7 +1276,7 @@ export default function App() {
   useGlobalStyle(GLOBAL_CSS);
   const cardRef = useRef(null);
   
-  // SPRINT 11 & 13: Wrapping Provider & Router[cite: 3, 5]
+  // SPRINT 11 & 13: Wrapping Provider & Router
   return (
     <Router>
       <AuthProvider>
@@ -1282,10 +1289,11 @@ export default function App() {
 }
 
 function AppRoutes({ cardRef }) {
-  const { user, login } = useContext(AuthContext); // SPRINT 13: Consume Auth State[cite: 5]
+  const { user, login } = useContext(AuthContext); // SPRINT 13: Consume Auth State
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
+  const API_URL = 'http://localhost:5173/api';
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -1293,8 +1301,8 @@ function AppRoutes({ cardRef }) {
     try {
       const res = await axios.post(`${API_URL}/login`, credentials);
       if (res.data) {
-        login(res.data); // SPRINT 13: Set Global User State[cite: 5]
-        navigate(res.data.role === 'sekolah' ? '/siswa' : '/laporan'); // SPRINT 11: Routing setelah login[cite: 3]
+        login(res.data); // SPRINT 13: Set Global User State
+        navigate(res.data.role === 'sekolah' ? '/siswa' : '/laporan'); // SPRINT 11: Routing setelah login
       }
     } catch { alert('Email atau Password salah!'); }
     finally { setIsLoadingLogin(false); }

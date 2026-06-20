@@ -1276,15 +1276,13 @@ export default function App() {
   useGlobalStyle(GLOBAL_CSS);
   const cardRef = useRef(null);
   
-  // SPRINT 11 & 13: Wrapping Provider & Router
+  // Karena BrowserRouter sudah ada di main.jsx, di sini langsung panggil Provider
   return (
-    <Router>
-      <AuthProvider>
-        <LaporanProvider>
-          <AppRoutes cardRef={cardRef} />
-        </LaporanProvider>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <LaporanProvider>
+        <AppRoutes cardRef={cardRef} />
+      </LaporanProvider>
+    </AuthProvider>
   );
 }
 

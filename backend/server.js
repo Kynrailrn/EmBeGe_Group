@@ -37,13 +37,15 @@ app.get('/api/laporan', async (req, res) => {
 app.post('/api/laporan', upload.single('foto'), async (req, res) => {
   try {
     const { user_id, rating, komentar } = req.body;
-    const schedule_id = 1; 
+    const schedule_id = 4; 
     const foto = req.file ? req.file.path : null;
+    console.log("Values to insert:", [user_id || 1, schedule_id, rating || 0, komentar, foto]);
     
     const sql = 'INSERT INTO feedbacks (user_id, schedule_id, rating, komentar, foto_bukti_url) VALUES (?, ?, ?, ?, ?)';
     await db.query(sql, [user_id || 1, schedule_id, rating || 0, komentar, foto]);
     res.json({ message: "Berhasil simpan laporan!" });
   } catch (err) {
+    console.error("DETAIL ERROR SQL:", err);
     res.status(500).json({ error: err.sqlMessage || err.message });
   }
 });
@@ -199,17 +201,26 @@ Object.keys(tableMap).forEach(route => {
     }
   });
 
-  app.delete(`/api/${route}/:id`, async (req, res) => {
-    try {
-      const { id } = req.params;
-      await db.query(`DELETE FROM ?? WHERE id = ?`, [tableName, id]);
-      res.json({ message: "Berhasil" });
-    } catch (err) {
-      res.status(500).json({ error: "Gagal" });
-    }
-  });
-});
+ // ... (lanjutkan dari kode di atas tepat sebelum bagian tableMap atau app.post login)
 
+  app.delete(`/api/${route}/:id`, async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`[DEBUG] Menghapus ID ${id} dari tabel ${tableName}`);
+    
+    // Melakukan penghapusan
+    await db.query(`DELETE FROM ?? WHERE id = ?`, [tableName, id]);
+    
+    res.json({ message: "Berhasil dihapus" });
+  } catch (err) {
+    // INI BAGIAN PALING PENTING: Mencetak error asli ke terminal
+    console.error("[DEBUG ERROR DATABASE]:", err.sqlMessage || err.message);
+    res.status(500).json({ error: err.sqlMessage || "Gagal hapus data" });
+  }
+});
+}); // <--- INI PENTING: Menutup forEach(tableMap)
+
+// Pastikan bagian login ada di luar forEach
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -222,5 +233,5 @@ app.post('/api/login', async (req, res) => {
 });
 
 db.getConnection().then(() => console.log('✅ Database Terhubung!'));
-const PORT = process.env.PORT || 5173;
+const PORT = 8000;
 app.listen(PORT, () => console.log(`🚀 Backend jalan di port ${PORT}`));

@@ -1428,7 +1428,7 @@ const MODAL_FIELDS = {
   siswa: [
     { key: 'nama_siswa', label: 'Nama Siswa', placeholder: 'Nama lengkap siswa', type: 'text' },
     { key: 'kelas',      label: 'Kelas',      placeholder: 'Contoh: 5A',         type: 'text' },
-    { key: 'sekolah_id', label: 'ID Sekolah', placeholder: 'ID sekolah',         type: 'number' },
+    { key: 'sekolah_id', label: 'ID Sekolah', type: 'select_sekolah' }, // <--- UBAH JADI SEPERTI INI
   ],
   sekolah: [
     { key: 'nama',          label: 'Nama Sekolah', placeholder: 'Nama institusi',   type: 'text' },

@@ -37,7 +37,7 @@ app.get('/api/laporan', async (req, res) => {
 app.post('/api/laporan', upload.single('foto'), async (req, res) => {
   try {
     const { user_id, rating, komentar } = req.body;
-    const schedule_id = 4; 
+    const schedule_id = 3; 
     const foto = req.file ? req.file.path : null;
     console.log("Values to insert:", [user_id || 1, schedule_id, rating || 0, komentar, foto]);
     
